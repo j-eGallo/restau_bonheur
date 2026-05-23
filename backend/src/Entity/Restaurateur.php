@@ -4,9 +4,12 @@ namespace App\Entity;
 
 use App\Repository\RestaurateurRepository;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Security\Core\User\UserInterface;
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+
 
 #[ORM\Entity(repositoryClass: RestaurateurRepository::class)]
-class Restaurateur
+class Restaurateur implements UserInterface, PasswordAuthenticatedUserInterface
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -91,5 +94,20 @@ class Restaurateur
         $this->password = $password;
 
         return $this;
+    }
+
+
+    public function getUserIdentifier(): string
+    {
+        return $this->email;
+    }
+
+    public function getRoles(): array
+    {
+        return ['ROLE_RESTAURATEUR'];
+    }
+
+    public function eraseCredentials(): void
+    {
     }
 }
