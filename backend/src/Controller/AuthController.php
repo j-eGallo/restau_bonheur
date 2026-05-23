@@ -85,7 +85,7 @@ class AuthController extends AbstractController
 
   }
 
-  #[Route('/api/login', methods: ['POST'])]
+  #[Route('/api/loginRestaurateur', methods: ['POST'])]
   public function login(
     Request $request,
     RestaurateurRepository $restaurateurRepository,
