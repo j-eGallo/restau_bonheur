@@ -14,7 +14,7 @@ use Symfony\Component\Routing\Annotation\Route;
 class AuthController extends AbstractController
 {
   #[Route('/api/registerRestaurateur', methods: ['POST'])]
-  public function register(
+  public function registerRes(
     Request $request,
     UserPasswordHasherInterface $passwordHasher,
     EntityManagerInterface $entityManager
@@ -86,7 +86,7 @@ class AuthController extends AbstractController
   }
 
   #[Route('/api/loginRestaurateur', methods: ['POST'])]
-  public function login(
+  public function loginRes(
     Request $request,
     RestaurateurRepository $restaurateurRepository,
     UserPasswordHasherInterface $passwordHasher,
@@ -139,8 +139,103 @@ class AuthController extends AbstractController
 
   }
 
-  #[Route('/api/logout', methods: ['POST'])]
-  public function logout()
+
+  #[Route('/api/updateRestaurateur', methods: ['POST'])]
+  public function updateRes(
+    Request $request,
+    RestaurateurRepository $restaurateurRepository,
+    UserPasswordHasherInterface $passwordHasher,
+    EntityManagerInterface $entityManager
+  ) {
+
+
+
+    $data = json_decode($request->getContent(), true);
+
+    $nom = $data['nom'] ?? null;
+    $prenom = $data['prenom'] ?? null;
+    $currentEmail = $data['currentEmail'] ?? null;
+    $email = $data['email'] ?? null;
+    $telephone = $data['telephone'] ?? null;
+    $currentPassword = $data['currentPassword'] ?? null;
+    $password = $data['password'] ?? null;
+
+
+
+    $restaurateur = $restaurateurRepository->findOneBy([
+      'email' => $currentEmail
+    ]);
+
+
+
+
+
+
+    if (!$restaurateur) {
+      return $this->json([
+        'error' => 'Utilisateur inexistant'
+      ], 404);
+    }
+
+
+    $passwordIsValid = $passwordHasher->isPasswordValid(
+      $restaurateur,
+      $currentPassword
+    );
+
+
+
+    if (!$passwordIsValid) {
+      return $this->json([
+        'error' => 'Mot de passe incorrect'
+      ], 404);
+    }
+
+
+    if ($nom) {
+      $restaurateur->setNom($nom);
+    }
+
+    if ($prenom) {
+      $restaurateur->setPrenom($prenom);
+    }
+
+    if ($email) {
+      $restaurateur->setEmail($email);
+    }
+
+    if ($telephone) {
+      $restaurateur->setTelephone($telephone);
+    }
+
+    if ($password) {
+
+      $hashedPassword = $passwordHasher->hashPassword(
+        $restaurateur,
+        $password
+      );
+
+      $restaurateur->setPassword($hashedPassword);
+
+    }
+
+
+
+    $entityManager->flush();
+
+
+
+
+    return $this->json([
+      'message' => 'Restaurateur modifié avec succès !'
+    ]);
+
+  }
+
+
+
+  #[Route('/api/logoutRestaurateur', methods: ['POST'])]
+  public function logoutRes()
   {
 
     return $this->json([
@@ -149,8 +244,8 @@ class AuthController extends AbstractController
 
   }
 
-  #[Route('/api/deleteAccount', methods: ['POST'])]
-  public function deleteAccount(
+  #[Route('/api/deleteRestaurateur', methods: ['POST'])]
+  public function deleteRestaurateur(
     Request $request,
     RestaurateurRepository $restaurateurRepository,
     EntityManagerInterface $entityManager,
