@@ -41,7 +41,7 @@ class Restaurant
     private ?int $personnes_max = null;
 
     #[ORM\OneToOne(targetEntity: Restaurateur::class)]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Restaurateur $restaurateur = null;
 
     public function getId(): ?int

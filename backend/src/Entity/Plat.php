@@ -4,6 +4,7 @@ namespace App\Entity;
 
 use App\Repository\PlatRepository;
 use Doctrine\DBAL\Types\Types;
+use App\Entity\Restaurant;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlatRepository::class)]
@@ -17,18 +18,20 @@ class Plat
     #[ORM\Column(length: 255)]
     private ?string $nom = null;
 
-    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 11)]
+    #[ORM\Column(type: Types::DECIMAL, precision: 11, scale: 2)]
     private ?string $prix = null;
 
     #[ORM\Column(length: 255)]
     private ?string $image_url = null;
 
-    #[ORM\Column]
-    private ?int $id_restaurant = null;
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    private ?Restaurant $restaurant = null;
 
     #[ORM\Column]
-    private ?int $id_categorie = null;
-
+    #[ORM\ManyToOne]
+    #[ORM\JoinColumn(nullable: false)]
+    private ?Categorie $categorie = null;
     public function getId(): ?int
     {
         return $this->id;
@@ -70,27 +73,18 @@ class Plat
         return $this;
     }
 
-    public function getIdRestaurant(): ?int
+    public function getRestaurant(): ?Restaurant
     {
-        return $this->id_restaurant;
+        return $this->restaurant;
     }
 
-    public function setIdRestaurant(int $id_restaurant): static
+    public function setRestaurant(?Restaurant $restaurant): static
     {
-        $this->id_restaurant = $id_restaurant;
+        $this->restaurant = $restaurant;
 
         return $this;
     }
 
-    public function getIdCategorie(): ?int
-    {
-        return $this->id_categorie;
-    }
 
-    public function setIdCategorie(int $id_categorie): static
-    {
-        $this->id_categorie = $id_categorie;
 
-        return $this;
-    }
 }
