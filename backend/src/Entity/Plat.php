@@ -4,7 +4,6 @@ namespace App\Entity;
 
 use App\Repository\PlatRepository;
 use Doctrine\DBAL\Types\Types;
-use App\Entity\Restaurant;
 use Doctrine\ORM\Mapping as ORM;
 
 #[ORM\Entity(repositoryClass: PlatRepository::class)]
@@ -28,10 +27,10 @@ class Plat
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Restaurant $restaurant = null;
 
-    #[ORM\Column]
     #[ORM\ManyToOne]
     #[ORM\JoinColumn(nullable: false)]
     private ?Categorie $categorie = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -85,6 +84,15 @@ class Plat
         return $this;
     }
 
+    public function getCategorie(): ?Categorie
+    {
+        return $this->categorie;
+    }
 
+    public function setCategorie(?Categorie $categorie): static
+    {
+        $this->categorie = $categorie;
 
+        return $this;
+    }
 }
