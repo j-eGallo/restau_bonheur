@@ -11,7 +11,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
-class AuthController extends AbstractController
+class RestaurateurController extends AbstractController
 {
   #[Route('/api/registerRestaurateur', methods: ['POST'])]
   public function registerRes(

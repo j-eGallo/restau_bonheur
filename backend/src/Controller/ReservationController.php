@@ -1,0 +1,288 @@
+<?php
+
+namespace App\Controller;
+
+use App\Entity\Reservation;
+use App\Entity\Restaurant;
+use App\Enum\ServiceEnum;
+use App\Repository\ReservationRepository;
+use App\Repository\RestaurantRepository;
+use Doctrine\ORM\EntityManagerInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\JsonResponse;
+use Symfony\Component\Routing\Annotation\Route;
+
+final class ReservationController extends AbstractController
+{
+
+  #[Route('/api/reservation/addReservation', methods: ['POST'])]
+  public function addReservation(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    RestaurantRepository $restaurantRepository,
+    ReservationRepository $reservationRepository
+  ): JsonResponse {
+
+    try {
+
+      $data = json_decode($request->getContent(), true);
+
+      if (json_last_error() !== JSON_ERROR_NONE) {
+
+        return $this->json([
+          'error' => json_last_error_msg()
+        ], 400);
+      }
+
+      $id_restaurant = $data['id_restaurant'] ?? null;
+      $date = $data['date'] ?? null;
+      $heure = $data['heure'] ?? null;
+      $service = $data['service'] ?? null;
+      $nb_personnes = $data['nb_personnes'] ?? null;
+
+      if (
+        !$id_restaurant ||
+        !$date ||
+        !$heure ||
+        !$service ||
+        !$nb_personnes
+      ) {
+
+        return $this->json([
+          'error' => 'Champs manquants'
+        ], 400);
+      }
+
+      $client = $this->getUser();
+
+      if (!$client) {
+
+        return $this->json([
+          'error' => 'Utilisateur non connecté'
+        ], 401);
+      }
+
+      $restaurant = $restaurantRepository->find($id_restaurant);
+
+      if (!$restaurant) {
+
+        return $this->json([
+          'error' => 'Restaurant introuvable'
+        ], 404);
+      }
+
+      $serviceEnum = ServiceEnum::from($service);
+
+      $reservations = $reservationRepository->findBy([
+        'restaurant' => $restaurant,
+        'date' => new \DateTime($date),
+        'service' => $serviceEnum
+      ]);
+
+      $placesPrises = 0;
+
+      foreach ($reservations as $reservation) {
+
+        $placesPrises += $reservation->getNbPersonnes();
+      }
+
+      $placesRestantes = $restaurant->getPersonnesMax() - $placesPrises;
+
+      if ($nb_personnes > $placesRestantes) {
+
+        return $this->json([
+          'error' => 'Pas assez de places disponibles'
+        ], 400);
+      }
+
+      $reservation = new Reservation();
+
+      $reservation->setDate(new \DateTime($date));
+      $reservation->setHeure(new \DateTime($heure));
+      $reservation->setService($serviceEnum);
+      $reservation->setNbPersonnes($nb_personnes);
+
+      $reservation->setClient($client);
+      $reservation->setRestaurant($restaurant);
+
+      $entityManager->persist($reservation);
+      $entityManager->flush();
+
+      return $this->json([
+        'message' => 'Réservation créée avec succès'
+      ], 201);
+
+    } catch (\Exception $e) {
+
+      return $this->json([
+        'error' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+
+
+  #[Route('/api/reservation/updateReservation', methods: ['POST'])]
+  public function updateReservation(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    RestaurantRepository $restaurantRepository,
+    ReservationRepository $reservationRepository
+  ): JsonResponse {
+
+    try {
+
+      $data = json_decode($request->getContent(), true);
+
+      if (json_last_error() !== JSON_ERROR_NONE) {
+
+        return $this->json([
+          'error' => json_last_error_msg()
+        ], 400);
+      }
+
+      $id = $data['id'] ?? null;
+      $id_restaurant = $data['id_restaurant'] ?? null;
+      $date = $data['date'] ?? null;
+      $heure = $data['heure'] ?? null;
+      $service = $data['service'] ?? null;
+      $nb_personnes = $data['nb_personnes'] ?? null;
+
+      $reservation = $reservationRepository->find($id);
+
+      if (!$reservation) {
+
+        return $this->json([
+          'error' => 'Réservation introuvable'
+        ], 404);
+      }
+
+      $client = $this->getUser();
+
+      if (!$client) {
+
+        return $this->json([
+          'error' => 'Utilisateur non connecté'
+        ], 401);
+      }
+
+      $restaurant = $restaurantRepository->find($id_restaurant);
+
+      if (!$restaurant) {
+
+        return $this->json([
+          'error' => 'Restaurant introuvable'
+        ], 404);
+      }
+
+      $serviceEnum = ServiceEnum::from($service);
+
+      $reservations = $reservationRepository->findBy([
+        'restaurant' => $restaurant,
+        'date' => new \DateTime($date),
+        'service' => $serviceEnum
+      ]);
+
+      $placesPrises = 0;
+
+      foreach ($reservations as $resa) {
+
+        if ($resa->getId() !== $reservation->getId()) {
+
+          $placesPrises += $resa->getNbPersonnes();
+        }
+      }
+
+      $placesRestantes = $restaurant->getPersonnesMax() - $placesPrises;
+
+      if ($nb_personnes > $placesRestantes) {
+
+        return $this->json([
+          'error' => 'Pas assez de places disponibles'
+        ], 400);
+      }
+
+      if ($date) {
+        $reservation->setDate(new \DateTime($date));
+      }
+
+      if ($heure) {
+        $reservation->setHeure(new \DateTime($heure));
+      }
+
+      if ($service) {
+        $reservation->setService($serviceEnum);
+      }
+
+      if ($nb_personnes) {
+        $reservation->setNbPersonnes($nb_personnes);
+      }
+
+      $entityManager->flush();
+
+      return $this->json([
+        'message' => 'Réservation modifiée avec succès'
+      ]);
+
+    } catch (\Exception $e) {
+
+      return $this->json([
+        'error' => $e->getMessage()
+      ], 500);
+    }
+  }
+
+
+
+  #[Route('/api/reservation/deleteReservation', methods: ['POST'])]
+  public function deleteReservation(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    ReservationRepository $reservationRepository
+  ): JsonResponse {
+
+    try {
+
+      $data = json_decode($request->getContent(), true);
+
+      if (json_last_error() !== JSON_ERROR_NONE) {
+
+        return $this->json([
+          'error' => json_last_error_msg()
+        ], 400);
+      }
+
+      $id = $data['id'] ?? null;
+
+      if (!$id) {
+
+        return $this->json([
+          'error' => 'ID manquant'
+        ], 400);
+      }
+
+      $reservation = $reservationRepository->find($id);
+
+      if (!$reservation) {
+
+        return $this->json([
+          'error' => 'Réservation introuvable'
+        ], 404);
+      }
+
+      $entityManager->remove($reservation);
+      $entityManager->flush();
+
+      return $this->json([
+        'message' => 'Réservation supprimée avec succès'
+      ]);
+
+    } catch (\Exception $e) {
+
+      return $this->json([
+        'error' => $e->getMessage()
+      ], 500);
+    }
+  }
+}
