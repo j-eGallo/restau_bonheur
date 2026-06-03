@@ -4,9 +4,11 @@ namespace App\Entity;
 
 use App\Repository\RestaurantRepository;
 use App\Entity\Restaurateur;
+use App\Entity\TypeCuisine;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
-
+use Doctrine\Common\Collections\ArrayCollection;
+use Doctrine\Common\Collections\Collection;
 
 #[ORM\Entity(repositoryClass: RestaurantRepository::class)]
 class Restaurant
@@ -41,8 +43,17 @@ class Restaurant
     private ?int $personnes_max = null;
 
     #[ORM\OneToOne(targetEntity: Restaurateur::class)]
-    #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
+    #[ORM\JoinColumn(nullable: false, unique: true, onDelete: 'CASCADE')]
     private ?Restaurateur $restaurateur = null;
+
+    #[ORM\ManyToMany(targetEntity: TypeCuisine::class, inversedBy: 'restaurants')]
+    #[ORM\JoinTable(name: 'restaurant_type_cuisine')]
+    private Collection $typeCuisines;
+
+    public function __construct()
+    {
+        $this->typeCuisines = new ArrayCollection();
+    }
 
     public function getId(): ?int
     {
@@ -97,12 +108,12 @@ class Restaurant
         return $this;
     }
 
-    public function getville(): ?string
+    public function getVille(): ?string
     {
         return $this->ville;
     }
 
-    public function setville(string $ville): static
+    public function setVille(string $ville): static
     {
         $this->ville = $ville;
 
@@ -145,7 +156,6 @@ class Restaurant
         return $this;
     }
 
-
     public function getRestaurateur(): ?Restaurateur
     {
         return $this->restaurateur;
@@ -154,6 +164,30 @@ class Restaurant
     public function setRestaurateur(?Restaurateur $restaurateur): static
     {
         $this->restaurateur = $restaurateur;
+
+        return $this;
+    }
+
+    /**
+     * @return Collection<int, TypeCuisine>
+     */
+    public function getTypeCuisines(): Collection
+    {
+        return $this->typeCuisines;
+    }
+
+    public function addTypeCuisine(TypeCuisine $typeCuisine): static
+    {
+        if (!$this->typeCuisines->contains($typeCuisine)) {
+            $this->typeCuisines->add($typeCuisine);
+        }
+
+        return $this;
+    }
+
+    public function removeTypeCuisine(TypeCuisine $typeCuisine): static
+    {
+        $this->typeCuisines->removeElement($typeCuisine);
 
         return $this;
     }

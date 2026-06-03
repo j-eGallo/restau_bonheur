@@ -59,8 +59,14 @@ security:
             jwt: ~
 
     access_control:
-        - { path: ^/api/login, roles: PUBLIC_ACCESS }
-        - { path: ^/api/register, roles: PUBLIC_ACCESS }
+        - { path: ^/api/type-cuisine/add, roles: PUBLIC_ACCESS }
+
+        - { path: ^/api/registerRestaurateur, roles: PUBLIC_ACCESS }
+        - { path: ^/api/loginRestaurateur, roles: PUBLIC_ACCESS }
+
+        - { path: ^/api/registerClient, roles: PUBLIC_ACCESS }
+        - { path: ^/api/loginClient, roles: PUBLIC_ACCESS }
+
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

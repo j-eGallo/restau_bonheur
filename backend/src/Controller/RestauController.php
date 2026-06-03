@@ -13,108 +13,108 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class RestauController extends AbstractController
 {
-  #[Route('/api/restaurant/create', name: 'create_restaurant', methods: ['POST'])]
-  public function createRestaurant(
-    Request $request,
-    EntityManagerInterface $entityManager
-  ): JsonResponse {
+  // #[Route('/api/restaurant/create', name: 'create_restaurant', methods: ['POST'])]
+  // public function createRestaurant(
+  //   Request $request,
+  //   EntityManagerInterface $entityManager
+  // ): JsonResponse {
 
-    $data = json_decode($request->getContent(), true);
+  //   $data = json_decode($request->getContent(), true);
 
-    $restaurateur = $this->getUser();
+  //   $restaurateur = $this->getUser();
 
-    if (!$restaurateur) {
+  //   if (!$restaurateur) {
 
-      return $this->json([
-        'error' => 'Utilisateur non connecté'
-      ], 401);
-    }
+  //     return $this->json([
+  //       'error' => 'Utilisateur non connecté'
+  //     ], 401);
+  //   }
 
-    try {
+  //   try {
 
-      $restaurant = new Restaurant();
+  //     $restaurant = new Restaurant();
 
-      $restaurant->setNom($data['nom']);
-      $restaurant->setNmRue($data['nm_rue']);
-      $restaurant->setRue($data['rue']);
-      $restaurant->setCodePostal($data['code_postal']);
-      $restaurant->setVille($data['ville']);
-      $restaurant->setLogoUrl($data['logo_url']);
-      $restaurant->setTelephone($data['telephone']);
-      $restaurant->setPersonnesMax($data['personnes_max']);
+  //     $restaurant->setNom($data['nom']);
+  //     $restaurant->setNmRue($data['nm_rue']);
+  //     $restaurant->setRue($data['rue']);
+  //     $restaurant->setCodePostal($data['code_postal']);
+  //     $restaurant->setVille($data['ville']);
+  //     $restaurant->setLogoUrl($data['logo_url']);
+  //     $restaurant->setTelephone($data['telephone']);
+  //     $restaurant->setPersonnesMax($data['personnes_max']);
 
-      $restaurant->setRestaurateur($restaurateur);
+  //     $restaurant->setRestaurateur($restaurateur);
 
-      $entityManager->persist($restaurant);
+  //     $entityManager->persist($restaurant);
 
-      foreach ($data['horaires'] as $horaireData) {
+  //     foreach ($data['horaires'] as $horaireData) {
 
-        $horaire = new Horaire();
+  //       $horaire = new Horaire();
 
-        $horaire->setJour(
-          JourEnum::from($horaireData['jour'])
-        );
+  //       $horaire->setJour(
+  //         JourEnum::from($horaireData['jour'])
+  //       );
 
-        $horaire->setOuvertMidi(
-          $horaireData['ouvert_midi']
-        );
+  //       $horaire->setOuvertMidi(
+  //         $horaireData['ouvert_midi']
+  //       );
 
-        $horaire->setOuvertSoir(
-          $horaireData['ouvert_soir']
-        );
+  //       $horaire->setOuvertSoir(
+  //         $horaireData['ouvert_soir']
+  //       );
 
-        $horaire->setRestaurant($restaurant);
+  //       $horaire->setRestaurant($restaurant);
 
-        if (isset($horaireData['heure_ouverture_midi'])) {
+  //       if (isset($horaireData['heure_ouverture_midi'])) {
 
-          $horaire->setHeureOuvertureMidi(
-            new \DateTime(
-              $horaireData['heure_ouverture_midi']
-            )
-          );
-        }
+  //         $horaire->setHeureOuvertureMidi(
+  //           new \DateTime(
+  //             $horaireData['heure_ouverture_midi']
+  //           )
+  //         );
+  //       }
 
-        if (isset($horaireData['heure_fermeture_midi'])) {
+  //       if (isset($horaireData['heure_fermeture_midi'])) {
 
-          $horaire->setHeureFermetureMidi(
-            new \DateTime(
-              $horaireData['heure_fermeture_midi']
-            )
-          );
-        }
+  //         $horaire->setHeureFermetureMidi(
+  //           new \DateTime(
+  //             $horaireData['heure_fermeture_midi']
+  //           )
+  //         );
+  //       }
 
-        if (isset($horaireData['heure_ouverture_soir'])) {
+  //       if (isset($horaireData['heure_ouverture_soir'])) {
 
-          $horaire->setHeureOuvertureSoir(
-            new \DateTime(
-              $horaireData['heure_ouverture_soir']
-            )
-          );
-        }
+  //         $horaire->setHeureOuvertureSoir(
+  //           new \DateTime(
+  //             $horaireData['heure_ouverture_soir']
+  //           )
+  //         );
+  //       }
 
-        if (isset($horaireData['heure_fermeture_soir'])) {
+  //       if (isset($horaireData['heure_fermeture_soir'])) {
 
-          $horaire->setHeureFermetureSoir(
-            new \DateTime(
-              $horaireData['heure_fermeture_soir']
-            )
-          );
-        }
+  //         $horaire->setHeureFermetureSoir(
+  //           new \DateTime(
+  //             $horaireData['heure_fermeture_soir']
+  //           )
+  //         );
+  //       }
 
-        $entityManager->persist($horaire);
-      }
+  //       $entityManager->persist($horaire);
+  //     }
 
-      $entityManager->flush();
+  //     $entityManager->flush();
 
-      return $this->json([
-        'message' => 'Restaurant créé avec succès'
-      ], 201);
+  //     return $this->json([
+  //       'message' => 'Restaurant créé avec succès'
+  //     ], 201);
 
-    } catch (\Exception $e) {
+  //   } catch (\Exception $e) {
 
-      return $this->json([
-        'error' => $e->getMessage()
-      ], 500);
-    }
-  }
+  //     return $this->json([
+  //       'error' => $e->getMessage()
+  //     ], 500);
+  //   }
+  // }
 }
