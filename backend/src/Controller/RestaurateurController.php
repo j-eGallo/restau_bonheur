@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Restaurateur;
+use App\Entity\TypeCuisine;
 use App\Repository\RestaurateurRepository;
 use App\Entity\Restaurant;
 use App\Entity\Horaire;
@@ -16,21 +17,43 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class RestaurateurController extends AbstractController
 {
-  #[Route('/api/registerRestaurateur', methods: ['POST'])]
+
   #[Route('/api/registerRestaurateur', methods: ['POST'])]
   public function registerRes(
     Request $request,
     UserPasswordHasherInterface $passwordHasher,
     EntityManagerInterface $entityManager
   ) {
+    $step = 'start';
+
     try {
-      $data = json_decode($request->getContent(), true);
+      $step = 'lecture_formdata';
+
+      $rawData = $request->request->get('data');
+      $logoFile = $request->files->get('logo');
+
+      if (!$rawData) {
+        return $this->json([
+          'error' => 'Aucune donnée reçue dans FormData[data]'
+        ], 400);
+      }
+
+      $data = json_decode($rawData, true);
 
       if (!$data) {
         return $this->json([
-          'error' => 'Invalid JSON'
+          'error' => 'Invalid JSON',
+          'raw_data' => $rawData
         ], 400);
       }
+
+      if (!$logoFile) {
+        return $this->json([
+          'error' => 'Logo obligatoire'
+        ], 400);
+      }
+
+      $step = 'lecture_champs';
 
       $nom = $data['nom'] ?? null;
       $prenom = $data['prenom'] ?? null;
@@ -39,9 +62,10 @@ class RestaurateurController extends AbstractController
       $password = $data['password'] ?? null;
       $restaurantData = $data['restaurant'] ?? null;
 
-      if (!$password || !$nom || !$prenom || !$email || !$telephone || !$restaurantData) {
+      if (!$nom || !$prenom || !$email || !$telephone || !$password || !$restaurantData) {
         return $this->json([
-          'error' => 'Champs restaurateur ou restaurant manquants'
+          'error' => 'Champs restaurateur ou restaurant manquants',
+          'data_recue' => $data
         ], 400);
       }
 
@@ -51,6 +75,8 @@ class RestaurateurController extends AbstractController
         ], 400);
       }
 
+      $step = 'verification_email';
+
       $existingUser = $entityManager
         ->getRepository(Restaurateur::class)
         ->findOneBy([
@@ -59,11 +85,41 @@ class RestaurateurController extends AbstractController
 
       if ($existingUser) {
         return $this->json([
-          'error' => 'Email déjà existant !'
+          'error' => 'Email déjà existant !',
+          'email' => $email,
+          'existing_id' => $existingUser->getId()
         ], 400);
       }
 
-      // 1. Création du restaurateur
+      $step = 'upload_logo';
+
+      $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/restaurants';
+
+      if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+      }
+
+      if (!is_writable($uploadDir)) {
+        return $this->json([
+          'error' => 'Le dossier upload n’est pas accessible en écriture',
+          'upload_dir' => $uploadDir
+        ], 500);
+      }
+
+      $extension = $logoFile->getClientOriginalExtension();
+
+      if (!$extension) {
+        $extension = 'png';
+      }
+
+      $newFilename = uniqid('restaurant_logo_', true) . '.' . $extension;
+
+      $logoFile->move($uploadDir, $newFilename);
+
+      $logoUrl = '/uploads/restaurants/' . $newFilename;
+
+      $step = 'creation_restaurateur';
+
       $restaurateur = new Restaurateur();
 
       $restaurateur->setNom($nom);
@@ -76,7 +132,8 @@ class RestaurateurController extends AbstractController
 
       $entityManager->persist($restaurateur);
 
-      // 2. Création du restaurant
+      $step = 'creation_restaurant';
+
       $restaurant = new Restaurant();
 
       $restaurant->setNom($restaurantData['nom']);
@@ -84,23 +141,59 @@ class RestaurateurController extends AbstractController
       $restaurant->setRue($restaurantData['rue']);
       $restaurant->setCodePostal($restaurantData['code_postal']);
       $restaurant->setVille($restaurantData['ville']);
-      $restaurant->setLogoUrl($restaurantData['logo_url']);
+      $restaurant->setLogoUrl($logoUrl);
       $restaurant->setTelephone($restaurantData['telephone']);
       $restaurant->setPersonnesMax($restaurantData['personnes_max']);
-
-      // Ici tu lies le restaurant au restaurateur créé juste au-dessus
       $restaurant->setRestaurateur($restaurateur);
 
       $entityManager->persist($restaurant);
 
-      // 3. Création des horaires
+      $step = 'liaison_types_cuisine';
+
+      $cuisines = $restaurantData['cuisines'] ?? [];
+
+      foreach ($cuisines as $cuisineNom) {
+        $typeCuisine = $entityManager
+          ->getRepository(TypeCuisine::class)
+          ->findOneBy([
+            'nom' => $cuisineNom
+          ]);
+
+        if (!$typeCuisine) {
+          return $this->json([
+            'error' => 'Type de cuisine introuvable : ' . $cuisineNom
+          ], 400);
+        }
+
+        $restaurant->addTypeCuisine($typeCuisine);
+      }
+
+      $step = 'creation_horaires';
+
       foreach ($restaurantData['horaires'] as $horaireData) {
         $horaire = new Horaire();
 
-        $horaire->setJour(
-          JourEnum::from($horaireData['jour'])
-        );
+        $jour = strtoupper($horaireData['jour']);
 
+        $jourEnum = match ($jour) {
+          'LUNDI' => JourEnum::LUNDI,
+          'MARDI' => JourEnum::MARDI,
+          'MERCREDI' => JourEnum::MERCREDI,
+          'JEUDI' => JourEnum::JEUDI,
+          'VENDREDI' => JourEnum::VENDREDI,
+          'SAMEDI' => JourEnum::SAMEDI,
+          'DIMANCHE' => JourEnum::DIMANCHE,
+          default => null
+        };
+
+        if (!$jourEnum) {
+          return $this->json([
+            'error' => 'Jour invalide',
+            'jour_recu' => $horaireData['jour']
+          ], 400);
+        }
+
+        $horaire->setJour($jourEnum);
         $horaire->setOuvertMidi($horaireData['ouvert_midi']);
         $horaire->setOuvertSoir($horaireData['ouvert_soir']);
 
@@ -133,16 +226,21 @@ class RestaurateurController extends AbstractController
         $entityManager->persist($horaire);
       }
 
-      // 4. Un seul flush final
+      $step = 'flush';
+
       $entityManager->flush();
 
       return $this->json([
-        'message' => 'Restaurateur, restaurant et horaires créés avec succès'
+        'message' => 'Restaurateur, restaurant, logo et horaires créés avec succès',
+        'logo_url' => $logoUrl
       ], 201);
 
-    } catch (\Exception $e) {
+    } catch (\Throwable $e) {
       return $this->json([
-        'error' => $e->getMessage()
+        'error' => $e->getMessage(),
+        'step' => $step,
+        'line' => $e->getLine(),
+        'file' => $e->getFile()
       ], 500);
     }
   }

@@ -43,6 +43,9 @@ class Reservation
     #[ORM\JoinColumn(nullable: false, onDelete: 'CASCADE')]
     private ?Restaurant $restaurant = null;
 
+    #[ORM\OneToOne(mappedBy: 'reservation', cascade: ['persist', 'remove'])]
+    private ?Avis $avis = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -120,6 +123,23 @@ class Reservation
     public function setRestaurant(?Restaurant $restaurant): static
     {
         $this->restaurant = $restaurant;
+
+        return $this;
+    }
+
+    public function getAvis(): ?Avis
+    {
+        return $this->avis;
+    }
+
+    public function setAvis(Avis $avis): static
+    {
+        // set the owning side of the relation if necessary
+        if ($avis->getReservation() !== $this) {
+            $avis->setReservation($this);
+        }
+
+        $this->avis = $avis;
 
         return $this;
     }
