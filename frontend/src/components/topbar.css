@@ -1,0 +1,35 @@
+.topbar {
+  background-color: #282625;
+  height: 55px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  position: relative;
+}
+
+.logo {
+  width: 130px;
+}
+
+.btn {
+    position: absolute;
+    right: 20px;
+    background-color: #ec5b15;
+    color: white;
+    padding: 10px;
+    width: 140px;
+    border: none;
+    border-radius: 55px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.5s;
+}
+
+.btn:hover {
+
+    background-color: white;
+    color: #ec5b15;
+    transition: 0.5s;
+}

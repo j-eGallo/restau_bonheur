@@ -2,7 +2,6 @@ import { useState } from "react";
 import { Routes, Route, useNavigate } from "react-router-dom";
 import type { ChangeEvent, FormEvent } from "react";
 import "./App.css";
-import Home from "./components/Home";
 import logo from "./assets/logo.png";
 
 type Mode = "login" | "register";
@@ -867,7 +866,6 @@ return (
       }
     />
 
-    <Route path="components/home" element={<Home />} />
   </Routes>
 );
 }

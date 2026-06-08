@@ -3,6 +3,7 @@
 namespace App\Entity;
 
 use App\Repository\RestaurateurRepository;
+use App\Repository\RestaurantRepository;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Security\Core\User\UserInterface;
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;

@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Entity\Restaurateur;
 use App\Entity\TypeCuisine;
 use App\Repository\RestaurateurRepository;
+use App\Repository\RestaurantRepository;
 use App\Entity\Restaurant;
 use App\Entity\Horaire;
 use App\Enum\JourEnum;
@@ -299,6 +300,46 @@ class RestaurateurController extends AbstractController
 
   }
 
+  #[Route('/api/restaurateur/me', methods: ['GET'])]
+  public function getCurrentRestaurateur(
+    RestaurantRepository $restaurantRepository
+  ) {
+
+
+    $restaurateur = $this->getUser();
+
+    if (!$restaurateur) {
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+    $restaurant = $restaurantRepository->findOneBy([
+      'restaurateur' => $restaurateur
+    ]);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Restaurant introuvable'
+      ], 404);
+    } else {
+      return $this->json([
+        'restaurateur' => [
+          'id' => $restaurateur->getId(),
+          'nom' => $restaurateur->getNom(),
+          'prenom' => $restaurateur->getPrenom()
+        ],
+        'restaurant' => [
+          'nom' => $restaurant->getNom(),
+          'nm_rue' => $restaurant->getNmRue(),
+          'rue' => $restaurant->getRue(),
+          'code_postal' => $restaurant->getCodePostal(),
+          'ville' => $restaurant->getVille()
+        ]
+      ]);
+    }
+  }
+
 
   #[Route('/api/updateRestaurateur', methods: ['POST'])]
   public function updateRes(
@@ -325,7 +366,6 @@ class RestaurateurController extends AbstractController
     $restaurateur = $restaurateurRepository->findOneBy([
       'email' => $currentEmail
     ]);
-
 
 
 
