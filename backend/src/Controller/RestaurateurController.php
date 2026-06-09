@@ -333,11 +333,71 @@ class RestaurateurController extends AbstractController
           'nom' => $restaurant->getNom(),
           'nm_rue' => $restaurant->getNmRue(),
           'rue' => $restaurant->getRue(),
+          'personnes_max' => $restaurant->getPersonnesMax(),
           'code_postal' => $restaurant->getCodePostal(),
           'ville' => $restaurant->getVille()
         ]
       ]);
     }
+  }
+
+
+  #[Route('/api/restaurant/update-places', methods: ['POST'])]
+  public function updateRestaurantPlaces(
+    Request $request,
+    RestaurantRepository $restaurantRepository,
+    EntityManagerInterface $entityManager
+  ) {
+    $restaurateur = $this->getUser();
+
+    if (!$restaurateur) {
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+    $restaurant = $restaurantRepository->findOneBy([
+      'restaurateur' => $restaurateur
+    ]);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Restaurant introuvable'
+      ], 404);
+    }
+
+    $data = json_decode($request->getContent(), true);
+
+    if (!$data) {
+      return $this->json([
+        'error' => 'Invalid JSON'
+      ], 400);
+    }
+
+    $personnesMax = $data['personnes_max'] ?? null;
+
+    if ($personnesMax === null || !is_numeric($personnesMax)) {
+      return $this->json([
+        'error' => 'Nombre de places invalide'
+      ], 400);
+    }
+
+    $personnesMax = (int) $personnesMax;
+
+    if ($personnesMax < 1) {
+      return $this->json([
+        'error' => 'Le nombre de places doit être supérieur à 0'
+      ], 400);
+    }
+
+    $restaurant->setPersonnesMax($personnesMax);
+
+    $entityManager->flush();
+
+    return $this->json([
+      'message' => 'Nombre de places mis à jour',
+      'personnes_max' => $restaurant->getPersonnesMax()
+    ]);
   }
 
 

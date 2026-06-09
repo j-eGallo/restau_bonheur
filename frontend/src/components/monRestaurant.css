@@ -1,0 +1,245 @@
+.restaurant-dashboard {
+  display: flex;
+  height: calc(100vh - 75px);
+  overflow: hidden;
+}
+
+.restaurant-content {
+  flex: 1;
+  height: calc(100vh - 75px);
+  position: relative;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+.restaurant-title {
+  margin: 35px 0 0 0;
+  text-align: center;
+  font-size: 32px;
+  font-weight: 500;
+  color: #282625;
+}
+
+.restaurant-top {
+  position: absolute;
+  top: 55px;
+  left: 0;
+  right: 95px;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+}
+
+.restaurant-info-block {
+  margin-left: 95px;
+  padding: 0;
+  text-align: left;
+}
+
+.restaurant-welcome {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 400;
+  color: #000000;
+}
+
+.home-restaurant-name {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 900;
+  color: #ec5b15;
+}
+
+.home-info {
+  margin: 0;
+  font-size: 18px;
+  color: #000000;
+  line-height: 1.2;
+  width: 100%;
+}
+
+.restaurant-note {
+  width: 300px;
+  min-height: 125px;
+  background-color: #ec5b15;
+  color: white;
+  border-radius: 7px;
+  padding: 20px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.restaurant-note h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: white;
+}
+
+.restaurant-places {
+  position: absolute;
+  top: 255px;
+  left: 95px;
+}
+
+
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.72);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 999;
+}
+
+.places-modal {
+  width: 320px;
+  min-height: 270px;
+  background-color: #777777;
+  border-radius: 2px;
+  padding: 35px 30px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+.places-modal h2 {
+  margin: 0 0 55px 0;
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+  text-align: center;
+}
+
+.places-counter {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 25px;
+  margin-bottom: 55px;
+}
+
+.places-counter span {
+  color: #ffffff;
+  font-size: 38px;
+  font-weight: 900;
+}
+
+.places-counter button {
+  width: 26px;
+  height: 26px;
+  border: none;
+  border-radius: 50%;
+  background-color: #ffffff;
+  color: #777777;
+  font-size: 18px;
+  font-weight: 900;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.places-save {
+  border: none;
+  border-radius: 3px;
+  background-color: #ffffff;
+  color: #282625;
+  padding: 7px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.places-save:hover {
+  background-color: #ec5b15;
+  color: #ffffff;
+}
+
+.places-save {
+  width: 100%;
+  border: none;
+  border-radius: 5px;
+  background-color: #ec5b15;
+  color: #ffffff;
+  padding: 10px;
+  font-weight: 900;
+  cursor: pointer;
+}
+
+.places-actions button:hover,
+.places-save:hover {
+  background-color: #a83d07;
+}
+
+
+.restaurant-small-box {
+  background-color: #ec5b15;
+  color: white;
+  border-radius: 7px;
+  padding: 18px 24px;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.5s;
+}
+
+.restaurant-small-box:hover {
+  background-color: #a83d07;
+  transition: 0.5s;
+}
+
+.restaurant-cards {
+    inset: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 95px;
+    box-sizing: border-box;
+    margin-top: 20%;
+}
+
+.restaurant-card {
+  background-color: #ec5b15;
+  cursor: pointer;
+  transition: 0.5s;
+  padding: 20px;
+  border-radius: 7px;
+  height: 247px;
+  width: 223px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  box-sizing: border-box;
+  z-index: 2;
+}
+
+.restaurant-card:hover {
+  background-color: #a83d07;
+  transition: 0.5s;
+}
+
+.restaurant-card-icon {
+  color: white;
+  font-size: 60px;
+  margin-bottom: 35px;
+}
+
+.restaurant-card h2 {
+  color: white;
+  font-size: 20px;
+  font-weight: 400;
+  text-align: center;
+  margin: 0;
+  text-transform: uppercase;
+}

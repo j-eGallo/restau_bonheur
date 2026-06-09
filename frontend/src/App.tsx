@@ -3,6 +3,8 @@ import { Routes, Route, useNavigate } from "react-router-dom";
 import type { ChangeEvent, FormEvent } from "react";
 import "./App.css";
 import logo from "./assets/logo.png";
+import Home from "./components/Home";
+import MonRestaurant from "./components/MonRestaurant";
 
 type Mode = "login" | "register";
 
@@ -461,411 +463,304 @@ return (
       path="/"
       element={
         <main className="auth-page">
-          <section className="auth-card">
-            <div className="auth-right">
-              <div className="auth-logo-box">
-                <img src={logo} alt="Restau Bonheur" className="auth-logo" />
-              </div>
+          <div className="auth-card">
+            <img src={logo} alt="Restau Bonheur" className="auth-logo" />
 
-              {mode === "login" && (
-                <form onSubmit={handleLogin} className="auth-form">
-                  <label>Email :</label>
-                  <input
-                    type="email"
-                    name="email"
-                    value={loginData.email}
-                    onChange={handleLoginChange}
-                    required
-                  />
+            {mode === "login" && (
+              <form onSubmit={handleLogin} className="auth-form">
+                <h1>Connexion restaurateur</h1>
 
-                  <label>Mot de passe :</label>
-                  <input
-                    type="password"
-                    name="password"
-                    value={loginData.password}
-                    onChange={handleLoginChange}
-                    required
-                  />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="Email"
+                  value={loginData.email}
+                  onChange={handleLoginChange}
+                />
 
-                  <button type="submit" disabled={loading}>
-                    {loading ? "Connexion..." : "SE CONNECTER"}
-                  </button>
+                <input
+                  type="password"
+                  name="password"
+                  placeholder="Mot de passe"
+                  value={loginData.password}
+                  onChange={handleLoginChange}
+                />
 
-                  <p className="auth-bottom-text">
-                    Pas encore inscrit ?{" "}
-                    <button
-                      type="button"
-                      className="auth-link-button"
-                      onClick={switchToRegister}
-                    >
-                      Créer un compte
+                <button type="submit" disabled={loading}>
+                  {loading ? "Connexion..." : "Se connecter"}
+                </button>
+
+                <button type="button" onClick={switchToRegister}>
+                  Pas de compte ? Créer un compte
+                </button>
+
+                {message && <p className="auth-message">{message}</p>}
+              </form>
+            )}
+
+            {mode === "register" && (
+              <div className="auth-form">
+                <h1>Inscription restaurateur</h1>
+
+                {step === 1 && (
+                  <>
+                    <input
+                      type="text"
+                      name="nom"
+                      placeholder="Nom"
+                      value={formData.nom}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="text"
+                      name="prenom"
+                      placeholder="Prénom"
+                      value={formData.prenom}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="email"
+                      name="email"
+                      placeholder="Email"
+                      value={formData.email}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="password"
+                      name="password"
+                      placeholder="Mot de passe"
+                      value={formData.password}
+                      onChange={handleFormChange}
+                    />
+                  </>
+                )}
+
+                {step === 2 && (
+                  <>
+                    <input
+                      type="text"
+                      name="restaurantNom"
+                      placeholder="Nom du restaurant"
+                      value={formData.restaurantNom}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="file"
+                      accept="image/*"
+                      onChange={handleLogoUpload}
+                    />
+
+                    <input
+                      type="text"
+                      name="restaurantTelephone"
+                      placeholder="Téléphone du restaurant"
+                      value={formData.restaurantTelephone}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="number"
+                      name="personnesMax"
+                      placeholder="Nombre de personnes maximum"
+                      value={formData.personnesMax}
+                      onChange={handleFormChange}
+                    />
+                  </>
+                )}
+
+                {step === 3 && (
+                  <div className="cuisine-list">
+                    {cuisines.map((cuisine) => (
+                      <label key={cuisine}>
+                        <input
+                          type="checkbox"
+                          checked={formData.cuisines.includes(cuisine)}
+                          onChange={() => handleCuisineChange(cuisine)}
+                        />
+                        {cuisine}
+                      </label>
+                    ))}
+                  </div>
+                )}
+
+                {step === 4 && (
+                  <>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={midiNeverOpen}
+                        onChange={(e) =>
+                          handleMidiNeverOpen(e.target.checked)
+                        }
+                      />
+                      Jamais ouvert le midi
+                    </label>
+
+                    {!midiNeverOpen && (
+                      <>
+                        <input
+                          type="time"
+                          value={midiTimes.ouverture}
+                          onChange={(e) =>
+                            handleMidiTimeChange("ouverture", e.target.value)
+                          }
+                        />
+
+                        <input
+                          type="time"
+                          value={midiTimes.fermeture}
+                          onChange={(e) =>
+                            handleMidiTimeChange("fermeture", e.target.value)
+                          }
+                        />
+
+                        <div className="jours-list">
+                          {horaires.map((horaire) => (
+                            <button
+                              key={horaire.jour}
+                              type="button"
+                              className={
+                                horaire.ouvert_midi ? "jour-open" : "jour-closed"
+                              }
+                              onClick={() => toggleMidiClosedDay(horaire.jour)}
+                            >
+                              {horaire.jour}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {step === 5 && (
+                  <>
+                    <label>
+                      <input
+                        type="checkbox"
+                        checked={soirNeverOpen}
+                        onChange={(e) =>
+                          handleSoirNeverOpen(e.target.checked)
+                        }
+                      />
+                      Jamais ouvert le soir
+                    </label>
+
+                    {!soirNeverOpen && (
+                      <>
+                        <input
+                          type="time"
+                          value={soirTimes.ouverture}
+                          onChange={(e) =>
+                            handleSoirTimeChange("ouverture", e.target.value)
+                          }
+                        />
+
+                        <input
+                          type="time"
+                          value={soirTimes.fermeture}
+                          onChange={(e) =>
+                            handleSoirTimeChange("fermeture", e.target.value)
+                          }
+                        />
+
+                        <div className="jours-list">
+                          {horaires.map((horaire) => (
+                            <button
+                              key={horaire.jour}
+                              type="button"
+                              className={
+                                horaire.ouvert_soir ? "jour-open" : "jour-closed"
+                              }
+                              onClick={() => toggleSoirClosedDay(horaire.jour)}
+                            >
+                              {horaire.jour}
+                            </button>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </>
+                )}
+
+                {step === 6 && (
+                  <>
+                    <input
+                      type="text"
+                      name="nmRue"
+                      placeholder="Numéro de rue"
+                      value={formData.nmRue}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="text"
+                      name="rue"
+                      placeholder="Nom de rue"
+                      value={formData.rue}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="text"
+                      name="codePostal"
+                      placeholder="Code postal"
+                      value={formData.codePostal}
+                      onChange={handleFormChange}
+                    />
+
+                    <input
+                      type="text"
+                      name="ville"
+                      placeholder="Ville"
+                      value={formData.ville}
+                      onChange={handleFormChange}
+                    />
+                  </>
+                )}
+
+                <div className="auth-actions">
+                  {step > 1 && (
+                    <button type="button" onClick={prevStep}>
+                      Retour
                     </button>
-                  </p>
-                </form>
-              )}
-
-              {mode === "register" && (
-                <div className="auth-form">
-                  {step === 1 && (
-                    <>
-                      <label>Nom :</label>
-                      <input
-                        type="text"
-                        name="nom"
-                        value={formData.nom}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Prénom :</label>
-                      <input
-                        type="text"
-                        name="prenom"
-                        value={formData.prenom}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Adresse Email :</label>
-                      <input
-                        type="email"
-                        name="email"
-                        value={formData.email}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Mot de passe :</label>
-                      <input
-                        type="password"
-                        name="password"
-                        value={formData.password}
-                        onChange={handleFormChange}
-                      />
-                    </>
                   )}
 
-                  {step === 2 && (
-                    <>
-                      <label>Nom du restaurant :</label>
-                      <input
-                        type="text"
-                        name="restaurantNom"
-                        value={formData.restaurantNom}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Logo du restaurant :</label>
-                      <input
-                        type="file"
-                        accept="image/*"
-                        onChange={handleLogoUpload}
-                      />
-
-                      {formData.restaurantLogo && (
-                        <img
-                          src={URL.createObjectURL(formData.restaurantLogo)}
-                          alt="Aperçu du logo"
-                          className="logo-preview"
-                        />
-                      )}
-
-                      <label>Numéro de téléphone du restaurant :</label>
-                      <input
-                        type="text"
-                        name="restaurantTelephone"
-                        value={formData.restaurantTelephone}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Nombre maximum de personnes :</label>
-                      <input
-                        type="number"
-                        name="personnesMax"
-                        value={formData.personnesMax}
-                        onChange={handleFormChange}
-                      />
-                    </>
-                  )}
-
-                  {step === 3 && (
-                    <>
-                      <label>Quelles cuisines pratique votre restaurant ?</label>
-
-                      <div className="checkbox-grid">
-                        {cuisines.map((cuisine) => (
-                          <label key={cuisine} className="checkbox-label">
-                            <input
-                              type="checkbox"
-                              checked={formData.cuisines.includes(cuisine)}
-                              onChange={() => handleCuisineChange(cuisine)}
-                            />
-                            {cuisine}
-                          </label>
-                        ))}
-                      </div>
-                    </>
-                  )}
-
-                  {step === 4 && (
-                    <div className="service-hours-block">
-                      <p className="service-title">Entrez les horaires du midi</p>
-
-                      <label className="never-open-row">
-                        <input
-                          type="checkbox"
-                          checked={midiNeverOpen}
-                          onChange={(e) =>
-                            handleMidiNeverOpen(e.target.checked)
-                          }
-                        />
-                        Je n'ouvre jamais le midi
-                      </label>
-
-                      {!midiNeverOpen && (
-                        <>
-                          <p className="service-subtitle">
-                            Entrez les horaires de votre restaurant :
-                          </p>
-
-                          <div className="hours-input-row">
-                            <label>
-                              Ouverture :
-                              <input
-                                type="time"
-                                value={midiTimes.ouverture}
-                                onChange={(e) =>
-                                  handleMidiTimeChange(
-                                    "ouverture",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </label>
-
-                            <label>
-                              Fermeture :
-                              <input
-                                type="time"
-                                value={midiTimes.fermeture}
-                                onChange={(e) =>
-                                  handleMidiTimeChange(
-                                    "fermeture",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </label>
-                          </div>
-
-                          <p className="service-subtitle">
-                            Midi fermé pour les jours suivants :
-                          </p>
-
-                          <div className="closed-days-grid">
-                            {jours.map((jour) => {
-                              const horaire = horaires.find(
-                                (item) => item.jour === jour
-                              );
-
-                              const isClosed = horaire
-                                ? !horaire.ouvert_midi
-                                : false;
-
-                              return (
-                                <button
-                                  key={jour}
-                                  type="button"
-                                  className={
-                                    isClosed
-                                      ? "day-toggle day-toggle-closed"
-                                      : "day-toggle"
-                                  }
-                                  onClick={() => toggleMidiClosedDay(jour)}
-                                >
-                                  {jour}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  )}
-
-                  {step === 5 && (
-                    <div className="service-hours-block">
-                      <p className="service-title">Entrez les horaires du soir</p>
-
-                      <label className="never-open-row">
-                        <input
-                          type="checkbox"
-                          checked={soirNeverOpen}
-                          onChange={(e) =>
-                            handleSoirNeverOpen(e.target.checked)
-                          }
-                        />
-                        Je n'ouvre jamais le soir
-                      </label>
-
-                      {!soirNeverOpen && (
-                        <>
-                          <p className="service-subtitle">
-                            Entrez les horaires de votre restaurant :
-                          </p>
-
-                          <div className="hours-input-row">
-                            <label>
-                              Ouverture :
-                              <input
-                                type="time"
-                                value={soirTimes.ouverture}
-                                onChange={(e) =>
-                                  handleSoirTimeChange(
-                                    "ouverture",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </label>
-
-                            <label>
-                              Fermeture :
-                              <input
-                                type="time"
-                                value={soirTimes.fermeture}
-                                onChange={(e) =>
-                                  handleSoirTimeChange(
-                                    "fermeture",
-                                    e.target.value
-                                  )
-                                }
-                              />
-                            </label>
-                          </div>
-
-                          <p className="service-subtitle">
-                            Soir fermé pour les jours suivants :
-                          </p>
-
-                          <div className="closed-days-grid">
-                            {jours.map((jour) => {
-                              const horaire = horaires.find(
-                                (item) => item.jour === jour
-                              );
-
-                              const isClosed = horaire
-                                ? !horaire.ouvert_soir
-                                : false;
-
-                              return (
-                                <button
-                                  key={jour}
-                                  type="button"
-                                  className={
-                                    isClosed
-                                      ? "day-toggle day-toggle-closed"
-                                      : "day-toggle"
-                                  }
-                                  onClick={() => toggleSoirClosedDay(jour)}
-                                >
-                                  {jour}
-                                </button>
-                              );
-                            })}
-                          </div>
-                        </>
-                      )}
-                    </div>
+                  {step < 6 && (
+                    <button type="button" onClick={nextStep}>
+                      Suivant
+                    </button>
                   )}
 
                   {step === 6 && (
-                    <>
-                      <label>Numéro de rue :</label>
-                      <input
-                        type="text"
-                        name="nmRue"
-                        value={formData.nmRue}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Rue :</label>
-                      <input
-                        type="text"
-                        name="rue"
-                        value={formData.rue}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Code postal :</label>
-                      <input
-                        type="text"
-                        name="codePostal"
-                        value={formData.codePostal}
-                        onChange={handleFormChange}
-                      />
-
-                      <label>Ville :</label>
-                      <input
-                        type="text"
-                        name="ville"
-                        value={formData.ville}
-                        onChange={handleFormChange}
-                      />
-                    </>
-                  )}
-
-                  <div className="step-buttons">
-                    {step > 1 && (
-                      <button type="button" onClick={prevStep}>
-                        RETOUR
-                      </button>
-                    )}
-
-                    {step < 6 && (
-                      <button
-                        type="button"
-                        onClick={nextStep}
-                        disabled={!isStepValid()}
-                        className={!isStepValid() ? "disabled-button" : ""}
-                      >
-                        SUIVANT
-                      </button>
-                    )}
-
-                    {step === 6 && (
-                      <button
-                        type="button"
-                        onClick={handleRegister}
-                        disabled={loading || !isStepValid()}
-                        className={!isStepValid() ? "disabled-button" : ""}
-                      >
-                        {loading ? "Inscription..." : "S'INSCRIRE"}
-                      </button>
-                    )}
-                  </div>
-
-                  <p className="auth-bottom-text">
-                    Déjà un compte ?{" "}
                     <button
                       type="button"
-                      className="auth-link-button"
-                      onClick={switchToLogin}
+                      onClick={handleRegister}
+                      disabled={loading}
                     >
-                      Me connecter
+                      {loading ? "Inscription..." : "Créer le compte"}
                     </button>
-                  </p>
+                  )}
                 </div>
-              )}
 
-              {message && <p className="message">{message}</p>}
-            </div>
+                <button type="button" onClick={switchToLogin}>
+                  Déjà un compte ? Se connecter
+                </button>
 
-            {mode === "register" && (
-              <p className="step-indicator">ÉTAPE {step} / 6</p>
+                {message && <p className="auth-message">{message}</p>}
+              </div>
             )}
-          </section>
+          </div>
         </main>
       }
     />
 
+    <Route path="/components/home" element={<Home />} />
+    <Route path="/restaurant" element={<MonRestaurant />} />
   </Routes>
 );
 }

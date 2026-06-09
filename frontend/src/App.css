@@ -5,6 +5,7 @@
 body {
   margin: 0;
   font-family: Arial, sans-serif;
+  background-color: #ffffff;
 }
 
 .auth-page {
@@ -12,88 +13,172 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  background-color: #ffffff;
 }
 
 .auth-card {
-    position: relative;
-    width: 760px;
-    min-height: 500px;
-    background: #2d2d2d;
-    display: flex;
-    padding: 14px;
-    color: white;
-    justify-content: center;
-    border-radius: 15px;
-}
-
-
-
-.auth-right {
-  width: 66%;
-  padding: 25px 45px 35px;
-}
-
-.auth-logo-box {
+  position: relative;
+  width: 760px;
+  min-height: 500px;
+  background-color: #2d2d2d;
+  color: white;
+  border-radius: 15px;
+  padding: 35px 70px;
   display: flex;
-  justify-content: center;
-  margin-bottom: 22px;
+  flex-direction: column;
+  align-items: center;
 }
 
 .auth-logo {
-  width: 120px;
+  width: 160px;
   height: auto;
   object-fit: contain;
+  margin-bottom: 28px;
 }
 
 .auth-form {
+  width: 100%;
+  max-width: 430px;
   display: flex;
   flex-direction: column;
-  gap: 9px;
+  align-items: center;
+}
+
+.auth-form h1 {
+  display: none;
 }
 
 .auth-form label {
-  font-size: 12px;
-  font-weight: bold;
+  width: 100%;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 900;
+  color: white;
+  margin-bottom: 10px;
 }
 
 .auth-form input {
+  width: 100%;
   height: 30px;
-  padding: 6px;
   border: none;
   outline: none;
+  padding: 5px 8px;
+  font-size: 14px;
+  margin-bottom: 18px;
+}
+
+.auth-form input[type="file"] {
+  height: auto;
+  background-color: white;
+  color: black;
+  padding: 6px;
 }
 
 .auth-form button {
-  width: fit-content;
-  align-self: center;
-  margin-top: 24px;
-  padding: 5px 10px;
-  cursor: pointer;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.auth-bottom-text {
-  margin-top: 14px;
-  text-align: center;
-  font-size: 12px;
-  font-weight: bold;
-  color: white;
-}
-
-.auth-link-button {
-  background: none;
   border: none;
-  color: white;
-  font-weight: bold;
-  text-decoration: underline;
+  background-color: white;
+  color: #000000;
+  font-weight: 900;
+  padding: 7px 13px;
   cursor: pointer;
-  padding: 0;
-  margin: 0;
   font-size: 12px;
+  margin-top: 16px;
 }
 
-/* ÉTAPE EN BAS À DROITE */
+.auth-form button:disabled {
+  background-color: #777777;
+  color: #555555;
+  cursor: not-allowed;
+}
+
+.auth-message {
+  text-align: center;
+  margin-top: 15px;
+  font-size: 13px;
+  font-weight: 900;
+  color: white;
+}
+
+.auth-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 10px;
+}
+
+.auth-actions button {
+  margin-top: 10px;
+}
+
+.auth-form > button[type="button"] {
+  background: none;
+  color: white;
+  text-decoration: underline;
+  padding: 0;
+  margin-top: 45px;
+  font-size: 13px;
+}
+
+.cuisine-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px 30px;
+  margin-top: 10px;
+}
+
+.cuisine-list label {
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  text-align: left;
+  margin: 0;
+}
+
+.cuisine-list input {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.auth-form label input {
+  width: auto;
+  height: auto;
+  margin: 0;
+}
+
+.jours-list {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(3, 75px);
+  justify-content: center;
+  gap: 12px 35px;
+  margin-top: 10px;
+}
+
+.jours-list button {
+  border: none;
+  background-color: white;
+  color: #222222;
+  font-weight: bold;
+  padding: 7px 8px;
+  cursor: pointer;
+  font-size: 11px;
+  margin: 0;
+  text-transform: capitalize;
+}
+
+.jour-open {
+  background-color: white !important;
+  color: #222222 !important;
+}
+
+.jour-closed {
+  background-color: #cfcfcf !important;
+  outline: 2px solid white;
+}
+
 .step-indicator {
   position: absolute;
   right: 28px;
@@ -102,122 +187,4 @@ body {
   font-size: 12px;
   font-weight: bold;
   color: white;
-}
-
-.step-buttons {
-  display: flex;
-  justify-content: center;
-  gap: 10px;
-}
-
-.checkbox-grid {
-  display: grid;
-  grid-template-columns: repeat(3, auto);
-  gap: 8px 14px;
-}
-
-.checkbox-label {
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  font-size: 11px;
-}
-
-.checkbox-label input {
-  width: auto;
-  height: auto;
-}
-
-.horaires-list {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-
-.horaire-row {
-  display: grid;
-  grid-template-columns: 100px 1fr 1fr;
-  gap: 6px;
-  align-items: center;
-}
-
-.logo-preview {
-  width: 55px;
-  height: 55px;
-  object-fit: cover;
-  border: 1px solid white;
-}
-
-.message {
-  text-align: center;
-  margin-top: 12px;
-  font-weight: bold;
-  font-size: 12px;
-}
-
-.service-hours-block {
-  display: flex;
-  flex-direction: column;
-  gap: 18px;
-}
-
-.service-title {
-  margin: 0;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.service-subtitle {
-  margin: 16px 0 0;
-  font-size: 13px;
-  font-weight: bold;
-}
-
-.never-open-row {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.never-open-row input {
-  width: auto;
-  height: auto;
-}
-
-.hours-input-row {
-  display: flex;
-  justify-content: space-between;
-  gap: 40px;
-}
-
-.hours-input-row label {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.hours-input-row input {
-  width: 95px;
-  height: 28px;
-}
-
-.closed-days-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 75px);
-  gap: 12px 35px;
-}
-
-.day-toggle {
-  border: none;
-  background: white;
-  color: #222;
-  font-weight: bold;
-  padding: 7px 8px;
-  cursor: pointer;
-  font-size: 11px;
-}
-
-.day-toggle-closed {
-  background: #cfcfcf;
-  outline: 2px solid white;
 }
