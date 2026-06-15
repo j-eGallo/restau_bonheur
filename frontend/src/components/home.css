@@ -1,7 +1,8 @@
 .dashboard {
   display: flex;
-  height: calc(100vh - 75px);
-  overflow: hidden;
+  min-height: 100vh;
+  margin-left: 300px;
+
 }
 
 .home-content {
@@ -14,14 +15,13 @@
 }
 
 .home-infos {
-  margin: 0;
   padding: 0;
   width: 100%;
 }
 
 .infos {
   margin-left: 95px;
-  margin-top: 55px;
+  margin-top: 90px;
   text-align: left;
 }
 
@@ -54,7 +54,14 @@
   justify-content: center;
   align-items: center;
   gap: 95px;
+  margin-top: 90px;
 }
+
+.card-link {
+  text-decoration: none;
+  color: inherit;
+}
+
 
 .carte {
   background-color: #ec5b15;
@@ -83,6 +90,7 @@
 .carte h1 {
   color: white;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 700;
   text-align: center;
+
 }

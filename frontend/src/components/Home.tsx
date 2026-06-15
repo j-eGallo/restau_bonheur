@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react"
 import { useNavigate } from 'react-router-dom';
+import { Link } from "react-router-dom";
 import './home.css';
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
@@ -98,10 +99,12 @@ return (
             <img className="logos" src={imgCalendar} alt="" />
             <h1>MES RÉSERVATIONS</h1>
           </div>
-          <div className="carte">
+
+          
+          <Link to="/restaurant" className="carte card-link">
             <img className="logos" src={imgHome} alt="" />
             <h1>MON RESTAURANT</h1>
-          </div>
+          </Link>
         </div>
       </main>
     </div>

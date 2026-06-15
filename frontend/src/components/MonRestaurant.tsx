@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
+import Menu from "../assets/food.png";
+import Photo from "../assets/photo.png"
 import "./monRestaurant.css";
 
 type Profile = {
@@ -201,12 +203,12 @@ useEffect(() => {
 
           <section className="restaurant-cards">
             <div className="restaurant-card">
-              <div className="restaurant-card-icon">▣</div>
+              <div className="restaurant-card-icon"><img className="btn-photo" src={Photo} alt="" /></div>
               <h2>Mes photos</h2>
             </div>
 
             <div className="restaurant-card">
-              <div className="restaurant-card-icon">🍴</div>
+              <div className="restaurant-card-icon"><img className="btn-photo" src={Menu} alt="" /></div>
               <h2>Mon menu</h2>
             </div>
           </section>

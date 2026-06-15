@@ -1,15 +1,18 @@
 .restaurant-dashboard {
   display: flex;
-  height: calc(100vh - 75px);
-  overflow: hidden;
+  min-height: 100vh;
+  margin-left: 300px;
+  padding-top: 55px;
+  box-sizing: border-box;
 }
 
 .restaurant-content {
   flex: 1;
-  height: calc(100vh - 75px);
+  min-height: calc(100vh - 55px);
   position: relative;
   box-sizing: border-box;
-  overflow: hidden;
+  overflow: visible;
+  margin-right: 80px;
 }
 
 .restaurant-title {
@@ -21,8 +24,7 @@
 }
 
 .restaurant-top {
-  position: absolute;
-  top: 55px;
+  margin-top: 55px;
   left: 0;
   right: 95px;
   display: flex;
@@ -205,7 +207,7 @@
     align-items: center;
     gap: 95px;
     box-sizing: border-box;
-    margin-top: 20%;
+    margin-top: 10%;
 }
 
 .restaurant-card {
@@ -242,4 +244,8 @@
   text-align: center;
   margin: 0;
   text-transform: uppercase;
+}
+
+.btn-photo {
+  width: 50px;
 }
