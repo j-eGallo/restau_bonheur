@@ -1,8 +1,9 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import "./photo.css";
+
 
 const API_URL = "http://localhost:8000";
 
@@ -33,8 +34,13 @@ export default function Photo() {
 
   const [profile, setProfile] = useState<Profile | null>(null);
   const [photos, setPhotos] = useState<PhotoItem[]>([]);
+
+
   const [selectedPhoto, setSelectedPhoto] = useState<File | null>(null);
   const [showAddBox, setShowAddBox] = useState(false);
+
+  const [selectedLogo, setSelectedLogo] = useState<File | null>(null);
+  const [showLogoBox, setShowLogoBox] = useState(false);
 
   useEffect(() => {
     const token = localStorage.getItem("restaurateur_token");
@@ -102,6 +108,64 @@ export default function Photo() {
         console.error("Erreur récupération photos :", error);
       });
   }, [navigate]);
+
+
+  const handleUpdateLogo = () => {
+  const token = localStorage.getItem("restaurateur_token");
+
+  if (!token) {
+    navigate("/");
+    return;
+  }
+
+  if (!selectedLogo) {
+    console.log("Aucun logo sélectionné");
+    return;
+  }
+
+  const formData = new FormData();
+  formData.append("logo", selectedLogo);
+
+  fetch(`${API_URL}/api/restaurant/update-logo`, {
+    method: "POST",
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+    body: formData,
+  })
+    .then(async (res) => {
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.log("Erreur modification logo :", data);
+        return null;
+      }
+
+      return data;
+    })
+    .then((data) => {
+      if (!data) return;
+
+      setProfile((prev) => {
+        if (!prev) return prev;
+
+        return {
+          ...prev,
+          restaurant: {
+            ...prev.restaurant,
+            logoUrl: data.logoUrl,
+          },
+        };
+      });
+
+      setSelectedLogo(null);
+      setShowLogoBox(false);
+    })
+    .catch((error) => {
+      console.error("Erreur modification logo :", error);
+    });
+};
 
   const handleAddPhoto = () => {
     const token = localStorage.getItem("restaurateur_token");
@@ -196,7 +260,11 @@ export default function Photo() {
         <SideBar />
 
         <main className="photo-content">
-          <h1 className="photo-title">MON RESTAURANT - Photos</h1>
+          <div className="photo-fildariane">
+              <Link to="/restaurant">Mon restaurant</Link>
+              <span>/</span>
+              <p>Mes photos</p>
+        </div>
 
           <section className="photo-logo-section">
             {profile && profile.restaurant.logoUrl && (
@@ -205,13 +273,48 @@ export default function Photo() {
                   src={`${API_URL}${profile.restaurant.logoUrl}`}
                   alt="Logo restaurant"
                 />
+                  <button
+                    type="button"
+                    className="edit-logo-btn"
+                    onClick={() => setShowLogoBox(true)}
+                  >
+                    ✎
+                  </button>
+              </div>
+            )}
 
-                <button type="button" className="edit-logo-btn">
-                  ✎
-                </button>
+
+            {showLogoBox && (
+              <div
+                className="photo-modal-overlay"
+                onClick={() => setShowLogoBox(false)}
+              >
+                <div
+                  className="photo-modal"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <h2>Modifier le logo</h2>
+
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={(e) => {
+                      const file = e.target.files?.[0];
+
+                      if (!file) return;
+
+                      setSelectedLogo(file);
+                    }}
+                  />
+
+                  <button type="button" onClick={handleUpdateLogo}>
+                    Sauvegarder
+                  </button>
+                </div>
               </div>
             )}
           </section>
+
 
           <section className="photo-actions">
             <button

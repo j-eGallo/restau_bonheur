@@ -13,6 +13,82 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class PhotoController extends AbstractController
 {
+
+
+  #[Route('/api/restaurant/update-logo', name: 'update_restaurant_logo', methods: ['POST'])]
+  public function updateRestaurantLogo(
+    Request $request,
+    EntityManagerInterface $entityManager,
+    RestaurantRepository $restaurantRepository
+  ): JsonResponse {
+    $restaurateur = $this->getUser();
+
+    if (!$restaurateur) {
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+    $restaurant = $restaurantRepository->findOneBy([
+      'restaurateur' => $restaurateur
+    ]);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Aucun restaurant trouvé'
+      ], 404);
+    }
+
+    $logoFile = $request->files->get('logo');
+
+    if (!$logoFile) {
+      return $this->json([
+        'error' => 'Aucun logo reçu'
+      ], 400);
+    }
+
+    try {
+      $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/restaurants';
+
+      if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+      }
+
+      if (!is_writable($uploadDir)) {
+        return $this->json([
+          'error' => 'Le dossier upload restaurants n’est pas accessible en écriture',
+          'upload_dir' => $uploadDir
+        ], 500);
+      }
+
+      $extension = $logoFile->getClientOriginalExtension();
+
+      if (!$extension) {
+        $extension = 'png';
+      }
+
+      $newFilename = uniqid('restaurant_logo_', true) . '.' . $extension;
+
+      $logoFile->move($uploadDir, $newFilename);
+
+      $logoUrl = '/uploads/restaurants/' . $newFilename;
+
+      $restaurant->setLogoUrl($logoUrl);
+
+      $entityManager->flush();
+
+      return $this->json([
+        'message' => 'Logo modifié avec succès',
+        'logoUrl' => $restaurant->getLogoUrl()
+      ]);
+
+    } catch (\Throwable $th) {
+      return $this->json([
+        'error' => $th->getMessage(),
+        'line' => $th->getLine()
+      ], 500);
+    }
+  }
   #[Route('/api/photo/addPhoto', name: 'add_photo', methods: ['POST'])]
   public function addPhoto(
     Request $request,
@@ -95,6 +171,46 @@ class PhotoController extends AbstractController
   }
 
 
+  #[Route('/api/photo/getPhotos', name: 'get_photos', methods: ['GET'])]
+  public function getPhotos(
+    RestaurantRepository $restaurantRepository,
+    PhotoRepository $photoRepository
+  ): JsonResponse {
+    $restaurateur = $this->getUser();
+
+    if (!$restaurateur) {
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+    $restaurant = $restaurantRepository->findOneBy([
+      'restaurateur' => $restaurateur
+    ]);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Aucun restaurant trouvé'
+      ], 404);
+    }
+
+    $photos = $photoRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
+
+    $photosData = [];
+
+    foreach ($photos as $photo) {
+      $photosData[] = [
+        'id' => $photo->getId(),
+        'url' => $photo->getUrl()
+      ];
+    }
+
+    return $this->json([
+      'photos' => $photosData
+    ]);
+  }
 
 
 

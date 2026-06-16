@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import Menu from "../assets/food.png";
-import Photo from "../assets/photo.png"
+import Photo from "../assets/photo.png";
 import { Link } from "react-router-dom";
 import "./monRestaurant.css";
 
@@ -19,110 +19,220 @@ type Profile = {
     rue: string;
     code_postal: string;
     ville: string;
+    telephone: string;
     personnes_max: number;
   };
 };
+
 export default function MonRestaurant() {
   const navigate = useNavigate();
-  const [profile, setProfile] = useState<Profile | null>(null);
 
+  const [profile, setProfile] = useState<Profile | null>(null);
 
   const [showPlacesBox, setShowPlacesBox] = useState(false);
   const [places, setPlaces] = useState<number>(0);
 
-useEffect(() => {
-  const token = localStorage.getItem("restaurateur_token");
+  const [showRestaurantModal, setShowRestaurantModal] = useState(false);
 
-  if (!token) {
-    navigate("/");
-    return;
-  }
+  const [restaurantForm, setRestaurantForm] = useState({
+    nom: "",
+    nm_rue: "",
+    rue: "",
+    code_postal: "",
+    ville: "",
+    telephone: "",
+  });
 
-  fetch("http://localhost:8000/api/restaurateur/me", {
-    method: "GET",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json"
+  useEffect(() => {
+    const token = localStorage.getItem("restaurateur_token");
+
+    if (!token) {
+      navigate("/");
+      return;
     }
-  })
-    .then(async (res) => {
-      const data = await res.json();
 
-      if (!res.ok) {
-        console.log("Erreur API :", data);
+    fetch("http://localhost:8000/api/restaurateur/me", {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+    })
+      .then(async (res) => {
+        const data = await res.json();
 
-        if (res.status === 401) {
-          localStorage.removeItem("restaurateur_token");
-          navigate("/");
+        if (!res.ok) {
+          console.log("Erreur API :", data);
+
+          if (res.status === 401) {
+            localStorage.removeItem("restaurateur_token");
+            navigate("/");
+          }
+
+          return null;
         }
 
-        return null;
-      }
+        return data;
+      })
+      .then((data) => {
+        if (!data) return;
 
-      return data;
-    })
-    .then((data) => {
-      if (!data) return;
+        setProfile(data);
+        setPlaces(data.restaurant.personnes_max);
 
-      setProfile(data);
-      setPlaces(data.restaurant.personnes_max);
-    })
-    .catch((error) => {
-      console.error("Erreur fetch restaurant :", error);
+        setRestaurantForm({
+          nom: data.restaurant.nom,
+          nm_rue: data.restaurant.nm_rue,
+          rue: data.restaurant.rue,
+          code_postal: data.restaurant.code_postal,
+          ville: data.restaurant.ville,
+          telephone: data.restaurant.telephone,
+        });
+      })
+      .catch((error) => {
+        console.error("Erreur fetch restaurant :", error);
+      });
+  }, [navigate]);
+
+  const openRestaurantModal = () => {
+    if (!profile) return;
+
+    setRestaurantForm({
+      nom: profile.restaurant.nom,
+      nm_rue: profile.restaurant.nm_rue,
+      rue: profile.restaurant.rue,
+      code_postal: profile.restaurant.code_postal,
+      ville: profile.restaurant.ville,
+      telephone: profile.restaurant.telephone,
     });
-}, [navigate]);
 
+    setShowRestaurantModal(true);
+  };
+
+  const handleSaveRestaurantInfos = () => {
+    const token = localStorage.getItem("restaurateur_token");
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    if (
+      restaurantForm.nom.trim() === "" ||
+      restaurantForm.nm_rue.trim() === "" ||
+      restaurantForm.rue.trim() === "" ||
+      restaurantForm.code_postal.trim() === "" ||
+      restaurantForm.ville.trim() === "" ||
+      restaurantForm.telephone.trim() === ""
+    ) {
+      console.log("Champs restaurant manquants");
+      return;
+    }
+
+    fetch("http://localhost:8000/api/restaurant/update-infos", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        nom: restaurantForm.nom,
+        nm_rue: restaurantForm.nm_rue,
+        rue: restaurantForm.rue,
+        code_postal: restaurantForm.code_postal,
+        ville: restaurantForm.ville,
+        telephone: restaurantForm.telephone,
+      }),
+    })
+      .then(async (res) => {
+        const data = await res.json();
+
+        if (!res.ok) {
+          console.log("Erreur update restaurant :", data);
+          return null;
+        }
+
+        return data;
+      })
+      .then((data) => {
+        if (!data) return;
+
+        setProfile((prev) => {
+          if (!prev) return prev;
+
+          return {
+            ...prev,
+            restaurant: {
+              ...prev.restaurant,
+              nom: data.restaurant.nom,
+              nm_rue: data.restaurant.nm_rue,
+              rue: data.restaurant.rue,
+              code_postal: data.restaurant.code_postal,
+              ville: data.restaurant.ville,
+              telephone: data.restaurant.telephone,
+            },
+          };
+        });
+
+        setShowRestaurantModal(false);
+      })
+      .catch((error) => {
+        console.error("Erreur sauvegarde infos restaurant :", error);
+      });
+  };
 
   const handleSavePlaces = () => {
-  const token = localStorage.getItem("restaurateur_token");
+    const token = localStorage.getItem("restaurateur_token");
 
-  if (!token) {
-    navigate("/");
-    return;
-  }
+    if (!token) {
+      navigate("/");
+      return;
+    }
 
-  fetch("http://localhost:8000/api/restaurant/update-places", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json"
-    },
-    body: JSON.stringify({
-      personnes_max: places
+    fetch("http://localhost:8000/api/restaurant/update-places", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+        Accept: "application/json",
+      },
+      body: JSON.stringify({
+        personnes_max: places,
+      }),
     })
-  })
-    .then(async (res) => {
-      const data = await res.json();
+      .then(async (res) => {
+        const data = await res.json();
 
-      if (!res.ok) {
-        console.log("Erreur API :", data);
-        return null;
-      }
+        if (!res.ok) {
+          console.log("Erreur API :", data);
+          return null;
+        }
 
-      return data;
-    })
-    .then((data) => {
-      if (!data) return;
+        return data;
+      })
+      .then((data) => {
+        if (!data) return;
 
-      setProfile((prev) => {
-        if (!prev) return prev;
+        setProfile((prev) => {
+          if (!prev) return prev;
 
-        return {
-          ...prev,
-          restaurant: {
-            ...prev.restaurant,
-            personnes_max: data.personnes_max
-          }
-        };
+          return {
+            ...prev,
+            restaurant: {
+              ...prev.restaurant,
+              personnes_max: data.personnes_max,
+            },
+          };
+        });
+
+        setShowPlacesBox(false);
+      })
+      .catch((error) => {
+        console.error("Erreur sauvegarde places :", error);
       });
+  };
 
-      setShowPlacesBox(false);
-    })
-    .catch((error) => {
-      console.error("Erreur sauvegarde places :", error);
-    });
-};
   return (
     <div>
       <TopBar />
@@ -133,85 +243,191 @@ useEffect(() => {
         <main className="restaurant-content">
           <h1 className="restaurant-title">MON RESTAURANT</h1>
 
-        <section className="restaurant-top">
-          {profile && (
-            <div className="restaurant-info-block">
-              <p className="restaurant-welcome">
-                Bienvenue, {profile.restaurateur.prenom} {profile.restaurateur.nom} !
-              </p>
+          <section className="restaurant-top">
+            {profile && (
+              <div
+                className="restaurant-info-block"
+                onClick={openRestaurantModal}
+              >
+                <p className="restaurant-welcome">
+                  Bienvenue, {profile.restaurateur.prenom}{" "}
+                  {profile.restaurateur.nom} !
+                </p>
 
-              <p className="home-restaurant-name">
-                {profile.restaurant.nom}
-              </p>
+                <p className="home-restaurant-name">
+                  {profile.restaurant.nom}
+                </p>
 
-              <p className="home-info">
-                {profile.restaurant.nm_rue} {profile.restaurant.rue}
-              </p>
+                <p className="home-info">
+                  {profile.restaurant.nm_rue} {profile.restaurant.rue}
+                </p>
 
-              <p className="home-info">
-                {profile.restaurant.code_postal}, {profile.restaurant.ville}
-              </p>
+                <p className="home-info">
+                  {profile.restaurant.code_postal}, {profile.restaurant.ville}
+                </p>
+
+                <p className="home-info">
+                  {profile.restaurant.telephone}
+                </p>
+              </div>
+            )}
+
+            <div className="restaurant-note">
+              <h2>Note restaurant</h2>
+            </div>
+          </section>
+
+          <section className="restaurant-places">
+            <div
+              className="restaurant-small-box"
+              onClick={() => setShowPlacesBox(true)}
+            >
+              Places disponibles
+            </div>
+          </section>
+
+          {showPlacesBox && (
+            <div className="modal-overlay" onClick={() => setShowPlacesBox(false)}>
+              <div className="places-modal" onClick={(e) => e.stopPropagation()}>
+                <h2>Nombre de places disponibles</h2>
+
+                <div className="places-counter">
+                  <button
+                    type="button"
+                    onClick={() => setPlaces((prev) => Math.max(1, prev - 1))}
+                  >
+                    -
+                  </button>
+
+                  <span>{places}</span>
+
+                  <button
+                    type="button"
+                    onClick={() => setPlaces((prev) => prev + 1)}
+                  >
+                    +
+                  </button>
+                </div>
+
+                <button
+                  type="button"
+                  className="places-save"
+                  onClick={handleSavePlaces}
+                >
+                  Sauvegarder
+                </button>
+              </div>
             </div>
           )}
 
-          <div className="restaurant-note">
-            <h2>Note restaurant</h2>
-          </div>
-        </section>
+          {showRestaurantModal && (
+            <div
+              className="modal-overlay"
+              onClick={() => setShowRestaurantModal(false)}
+            >
+              <div
+                className="places-modal"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <h2>Modifier les informations</h2>
 
-<section className="restaurant-places">
-  <div
-    className="restaurant-small-box"
-    onClick={() => setShowPlacesBox(true)}
-  >
-    Places disponibles
-  </div>
-</section>
+                <input
+                  type="text"
+                  placeholder="Nom du restaurant"
+                  value={restaurantForm.nom}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      nom: e.target.value,
+                    })
+                  }
+                />
 
-{showPlacesBox && (
-  <div className="modal-overlay" onClick={() => setShowPlacesBox(false)}>
-    <div className="places-modal" onClick={(e) => e.stopPropagation()}>
-      <h2>Nombre de places disponibles</h2>
+                <input
+                  type="text"
+                  placeholder="Numéro de rue"
+                  value={restaurantForm.nm_rue}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      nm_rue: e.target.value,
+                    })
+                  }
+                />
 
-      <div className="places-counter">
-        <button
-          type="button"
-          onClick={() => setPlaces((prev) => Math.max(1, prev - 1))}
-        >
-          -
-        </button>
+                <input
+                  type="text"
+                  placeholder="Rue"
+                  value={restaurantForm.rue}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      rue: e.target.value,
+                    })
+                  }
+                />
 
-        <span>{places}</span>
+                <input
+                  type="text"
+                  placeholder="Code postal"
+                  value={restaurantForm.code_postal}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      code_postal: e.target.value,
+                    })
+                  }
+                />
 
-        <button
-          type="button"
-          onClick={() => setPlaces((prev) => prev + 1)}
-        >
-          +
-        </button>
-      </div>
+                <input
+                  type="text"
+                  placeholder="Ville"
+                  value={restaurantForm.ville}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      ville: e.target.value,
+                    })
+                  }
+                />
 
-      <button
-        type="button"
-        className="places-save"
-        onClick={handleSavePlaces}
-      >
-        Sauvegarder
-      </button>
-    </div>
-  </div>
-)}
+                <input
+                  type="text"
+                  placeholder="Téléphone"
+                  value={restaurantForm.telephone}
+                  onChange={(e) =>
+                    setRestaurantForm({
+                      ...restaurantForm,
+                      telephone: e.target.value,
+                    })
+                  }
+                />
+
+                <button
+                  type="button"
+                  className="places-save"
+                  onClick={handleSaveRestaurantInfos}
+                >
+                  Sauvegarder
+                </button>
+              </div>
+            </div>
+          )}
 
           <section className="restaurant-cards">
             <Link to="/restaurant/photos" className="restaurant-card card-link">
-              <div className="restaurant-card-icon"><img src={Photo} alt="" /></div>
+              <div className="restaurant-card-icon">
+                <img className="btn-photo" src={Photo} alt="" />
+              </div>
               <h2>Mes photos</h2>
             </Link>
 
-            <div className="restaurant-card">
-              <div className="restaurant-card-icon"><img className="btn-photo" src={Menu} alt="" /></div>
+            <Link to="/restaurant/menu" className="restaurant-card card-link">
+              <div className="restaurant-card-icon">
+                <img className="btn-photo" src={Menu} alt="" />
+              </div>
               <h2>Mon menu</h2>
-            </div>
+            </Link>
           </section>
         </main>
       </div>

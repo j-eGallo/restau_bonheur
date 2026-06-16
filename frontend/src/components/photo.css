@@ -14,11 +14,30 @@
   padding: 40px 70px 80px 70px;
 }
 
-.photo-title {
-  margin: 0 0 35px 0;
-  text-align: center;
-  font-size: 34px;
-  font-weight: 500;
+
+
+.photo-fildariane {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 25px;
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.photo-fildariane a {
+  color: #ec5b15;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.photo-fildariane a:hover {
+  text-decoration: underline;
+}
+
+.photo-fildariane span,
+.photo-fildariane p {
+  margin: 0;
   color: #282625;
 }
 
