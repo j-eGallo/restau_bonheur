@@ -335,7 +335,8 @@ class RestaurateurController extends AbstractController
           'rue' => $restaurant->getRue(),
           'personnes_max' => $restaurant->getPersonnesMax(),
           'code_postal' => $restaurant->getCodePostal(),
-          'ville' => $restaurant->getVille()
+          'ville' => $restaurant->getVille(),
+          'logoUrl' => $restaurant->getLogoUrl()
         ]
       ]);
     }

@@ -5,6 +5,7 @@ import "./App.css";
 import logo from "./assets/logo.png";
 import Home from "./components/Home";
 import MonRestaurant from "./components/MonRestaurant";
+import Photo from "./components/Photo";
 
 type Mode = "login" | "register";
 
@@ -761,6 +762,8 @@ return (
 
     <Route path="/components/home" element={<Home />} />
     <Route path="/restaurant" element={<MonRestaurant />} />
+    <Route path="/restaurant/photos" element={<Photo />} />
+    
   </Routes>
 );
 }

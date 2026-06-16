@@ -4,6 +4,7 @@ import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import Menu from "../assets/food.png";
 import Photo from "../assets/photo.png"
+import { Link } from "react-router-dom";
 import "./monRestaurant.css";
 
 type Profile = {
@@ -202,10 +203,10 @@ useEffect(() => {
 )}
 
           <section className="restaurant-cards">
-            <div className="restaurant-card">
-              <div className="restaurant-card-icon"><img className="btn-photo" src={Photo} alt="" /></div>
+            <Link to="/restaurant/photos" className="restaurant-card card-link">
+              <div className="restaurant-card-icon"><img src={Photo} alt="" /></div>
               <h2>Mes photos</h2>
-            </div>
+            </Link>
 
             <div className="restaurant-card">
               <div className="restaurant-card-icon"><img className="btn-photo" src={Menu} alt="" /></div>

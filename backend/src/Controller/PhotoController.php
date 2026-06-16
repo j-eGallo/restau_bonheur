@@ -19,10 +19,7 @@ class PhotoController extends AbstractController
     EntityManagerInterface $entityManager,
     RestaurantRepository $restaurantRepository
   ): JsonResponse {
-    $data = json_decode($request->getContent(), true);
     $restaurateur = $this->getUser();
-
-
 
     if (!$restaurateur) {
       return $this->json([
@@ -40,17 +37,53 @@ class PhotoController extends AbstractController
       ], 404);
     }
 
+    $photoFile = $request->files->get('photo');
+
+    if (!$photoFile) {
+      return $this->json([
+        'error' => 'Aucune photo reçue'
+      ], 400);
+    }
 
     try {
+      $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/photos';
+
+      if (!is_dir($uploadDir)) {
+        mkdir($uploadDir, 0777, true);
+      }
+
+      if (!is_writable($uploadDir)) {
+        return $this->json([
+          'error' => 'Le dossier upload photos n’est pas accessible en écriture',
+          'upload_dir' => $uploadDir
+        ], 500);
+      }
+
+      $extension = $photoFile->getClientOriginalExtension();
+
+      if (!$extension) {
+        $extension = 'png';
+      }
+
+      $newFilename = uniqid('restaurant_photo_', true) . '.' . $extension;
+
+      $photoFile->move($uploadDir, $newFilename);
+
+      $photoUrl = '/uploads/photos/' . $newFilename;
+
       $photo = new Photo();
-      $photo->setUrl($data['url']);
+      $photo->setUrl($photoUrl);
       $photo->setRestaurant($restaurant);
 
       $entityManager->persist($photo);
       $entityManager->flush();
 
       return $this->json([
-        'message' => 'Photo ajoutée'
+        'message' => 'Photo ajoutée',
+        'photo' => [
+          'id' => $photo->getId(),
+          'url' => $photo->getUrl()
+        ]
       ], 201);
 
     } catch (\Throwable $th) {
@@ -60,7 +93,6 @@ class PhotoController extends AbstractController
       ], 500);
     }
   }
-
 
 
 
