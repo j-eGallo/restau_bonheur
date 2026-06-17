@@ -9,6 +9,10 @@ use App\Repository\RestaurantRepository;
 use App\Entity\Restaurant;
 use App\Entity\Horaire;
 use App\Enum\JourEnum;
+use App\Entity\Photo;
+use App\Entity\Plat;
+use App\Entity\Reservation;
+use App\Entity\Avis;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -327,7 +331,9 @@ class RestaurateurController extends AbstractController
         'restaurateur' => [
           'id' => $restaurateur->getId(),
           'nom' => $restaurateur->getNom(),
-          'prenom' => $restaurateur->getPrenom()
+          'prenom' => $restaurateur->getPrenom(),
+          'email' => $restaurateur->getEmail(),
+          'telephone' => $restaurateur->getTelephone()
         ],
         'restaurant' => [
           'nom' => $restaurant->getNom(),
@@ -453,10 +459,10 @@ class RestaurateurController extends AbstractController
   public function deleteRestaurateur(
     Request $request,
     RestaurateurRepository $restaurateurRepository,
+    RestaurantRepository $restaurantRepository,
     EntityManagerInterface $entityManager,
     UserPasswordHasherInterface $passwordHasher
   ) {
-
     $data = json_decode($request->getContent(), true);
 
     if (!$data) {
@@ -480,7 +486,7 @@ class RestaurateurController extends AbstractController
 
     if (!$user) {
       return $this->json([
-        'error' => 'User does not exists'
+        'error' => 'User does not exist'
       ], 404);
     }
 
@@ -490,12 +496,73 @@ class RestaurateurController extends AbstractController
       ], 401);
     }
 
+    $restaurant = $restaurantRepository->findOneBy([
+      'restaurateur' => $user
+    ]);
+
+    if ($restaurant) {
+      $photos = $entityManager
+        ->getRepository(Photo::class)
+        ->findBy([
+          'restaurant' => $restaurant
+        ]);
+
+      foreach ($photos as $photo) {
+        $entityManager->remove($photo);
+      }
+
+      $plats = $entityManager
+        ->getRepository(Plat::class)
+        ->findBy([
+          'restaurant' => $restaurant
+        ]);
+
+      foreach ($plats as $plat) {
+        $entityManager->remove($plat);
+      }
+
+      $reservations = $entityManager
+        ->getRepository(Reservation::class)
+        ->findBy([
+          'restaurant' => $restaurant
+        ]);
+
+      foreach ($reservations as $reservation) {
+        $entityManager->remove($reservation);
+      }
+
+      $avis = $entityManager
+        ->getRepository(Avis::class)
+        ->findBy([
+          'restaurant' => $restaurant
+        ]);
+
+      foreach ($avis as $avi) {
+        $entityManager->remove($avi);
+      }
+
+      $horaires = $entityManager
+        ->getRepository(Horaire::class)
+        ->findBy([
+          'restaurant' => $restaurant
+        ]);
+
+      foreach ($horaires as $horaire) {
+        $entityManager->remove($horaire);
+      }
+
+      foreach ($restaurant->getTypeCuisines() as $typeCuisine) {
+        $restaurant->removeTypeCuisine($typeCuisine);
+      }
+
+      $entityManager->remove($restaurant);
+    }
+
     $entityManager->remove($user);
     $entityManager->flush();
 
     return $this->json([
-      'message' => 'Account deleted'
+      'message' => 'Compte restaurateur et restaurant supprimés avec succès'
     ]);
-
   }
 }

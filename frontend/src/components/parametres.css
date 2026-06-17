@@ -1,0 +1,131 @@
+.parametres-dashboard {
+  display: flex;
+  min-height: 100vh;
+  margin-left: 300px;
+  padding-top: 55px;
+  box-sizing: border-box;
+}
+
+.parametres-content {
+  width: 100%;
+  min-height: calc(100vh - 55px);
+  padding: 35px 70px;
+  box-sizing: border-box;
+}
+
+.parametres-title {
+  text-align: center;
+  color: #282625;
+  font-size: 34px;
+  margin-bottom: 10px;
+}
+
+.parametres-form-wrapper {
+  width: 420px;
+  margin: 0 auto;
+}
+
+.parametres-form-wrapper h2 {
+  text-align: center;
+  margin-bottom: 20px;
+  color: #282625;
+}
+
+.parametres-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.parametres-form label {
+  font-weight: 900;
+  margin-bottom: 5px;
+  color: #282625;
+}
+
+.parametres-form input {
+  height: 38px;
+  margin-bottom: 14px;
+  padding: 8px;
+  box-sizing: border-box;
+  border: 1px solid #aaaaaa;
+  border-radius: 3px;
+}
+
+.parametres-save-btn {
+  align-self: center;
+  background-color: #ec5b15;
+  color: white;
+  border: none;
+  padding: 9px 18px;
+  font-weight: 900;
+  cursor: pointer;
+  border-radius: 4px;
+  margin-top: 8px;
+}
+
+.parametres-save-btn:hover {
+  background-color: #a83d07;
+}
+
+.parametres-delete-btn {
+  margin-top: 22px;
+  background: none;
+  border: none;
+  color: #282625;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.parametres-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background-color: rgba(0, 0, 0, 0.72);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 9999;
+}
+
+.parametres-password-modal {
+  width: 380px;
+  background-color: #777777;
+  padding: 35px;
+  border-radius: 5px;
+  color: white;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.parametres-password-modal h2 {
+  text-align: center;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.parametres-password-modal p {
+  text-align: center;
+  margin: 0;
+  font-weight: 700;
+}
+
+.parametres-password-modal input {
+  height: 38px;
+  border: none;
+  padding: 8px;
+  box-sizing: border-box;
+}
+
+.parametres-modal-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+}
+
+.parametres-modal-actions button {
+  border: none;
+  padding: 9px 16px;
+  font-weight: 900;
+  cursor: pointer;
+}
