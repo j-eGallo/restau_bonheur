@@ -121,7 +121,86 @@ final class ReservationController extends AbstractController
     }
   }
 
+  #[Route('/api/restaurateur/reservations', methods: ['GET'])]
+  public function getRestaurantReservations(
+    Request $request,
+    RestaurantRepository $restaurantRepository,
+    ReservationRepository $reservationRepository
+  ): JsonResponse {
+    try {
+      $restaurateur = $this->getUser();
 
+      if (!$restaurateur) {
+        return $this->json([
+          'error' => 'Utilisateur non connecté'
+        ], 401);
+      }
+
+      $restaurant = $restaurantRepository->findOneBy([
+        'restaurateur' => $restaurateur
+      ]);
+
+      if (!$restaurant) {
+        return $this->json([
+          'error' => 'Restaurant introuvable pour ce restaurateur'
+        ], 404);
+      }
+
+      $date = $request->query->get('date');
+
+      if (!$date) {
+        return $this->json([
+          'error' => 'Date manquante'
+        ], 400);
+      }
+
+      $dateObject = new \DateTime($date);
+
+      $reservations = $reservationRepository->findBy(
+        [
+          'restaurant' => $restaurant,
+          'date' => $dateObject
+        ],
+        [
+          'heure' => 'ASC'
+        ]
+      );
+
+      $reservationsData = [];
+
+      foreach ($reservations as $reservation) {
+        $client = $reservation->getClient();
+
+        $reservationsData[] = [
+          'id' => $reservation->getId(),
+          'date' => $reservation->getDate()->format('Y-m-d'),
+          'heure' => $reservation->getHeure()->format('H:i'),
+          'service' => $reservation->getService()->value,
+          'nb_personnes' => $reservation->getNbPersonnes(),
+          'client' => [
+            'nom' => $client->getNom(),
+            'prenom' => $client->getPrenom(),
+            'telephone' => $client->getTelephone()
+          ]
+        ];
+      }
+
+      return $this->json([
+        'restaurant' => [
+          'id' => $restaurant->getId(),
+          'nom' => $restaurant->getNom()
+        ],
+        'reservations' => $reservationsData
+      ]);
+
+    } catch (\Exception $e) {
+      return $this->json([
+        'error' => $e->getMessage(),
+        'line' => $e->getLine(),
+        'file' => $e->getFile()
+      ], 500);
+    }
+  }
 
   #[Route('/api/reservation/updateReservation', methods: ['POST'])]
   public function updateReservation(

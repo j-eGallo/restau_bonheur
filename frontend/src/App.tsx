@@ -8,6 +8,7 @@ import MonRestaurant from "./components/MonRestaurant";
 import Photo from "./components/Photo";
 import Menu from "./components/Menu";
 import Parametres from "./components/Parametres";
+import Reservation from "./components/Reservation";
 
 type Mode = "login" | "register";
 
@@ -767,6 +768,7 @@ return (
     <Route path="/restaurant/photos" element={<Photo />} />
     <Route path="/restaurant/menu" element={<Menu />}/>
     <Route path="/parametres" element={<Parametres />} />
+    <Route path="/reservations" element={<Reservation />} />
     
   </Routes>
 );

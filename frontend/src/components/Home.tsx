@@ -95,12 +95,11 @@ return (
           </div>
         )}
         <div className="card">
-          <div className="carte">
+          <Link to="/reservations" className="carte card-link">
             <img className="logos" src={imgCalendar} alt="" />
-            <h1>MES RÉSERVATIONS</h1>
-          </div>
+            <h1>MON RESTAURANT</h1>
+          </Link>
 
-          
           <Link to="/restaurant" className="carte card-link">
             <img className="logos" src={imgHome} alt="" />
             <h1>MON RESTAURANT</h1>
