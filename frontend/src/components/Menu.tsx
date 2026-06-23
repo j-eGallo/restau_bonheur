@@ -8,6 +8,7 @@ const API_URL = "http://localhost:8000";
 
 type TypeCuisine = {
   id: number;
+  logo_url: string;
   nom: string;
 };
 
@@ -472,6 +473,7 @@ export default function Menu() {
             <div className="type-cuisine-list">
               {restaurantTypesCuisine.map((typeCuisine) => (
                 <div className="type-cuisine-tag" key={typeCuisine.id}>
+                  <span>{typeCuisine.logo_url}</span>
                   <span>{typeCuisine.nom}</span>
 
                   <button
@@ -551,6 +553,7 @@ export default function Menu() {
 
                   {availableTypesCuisine.map((typeCuisine) => (
                     <option key={typeCuisine.id} value={typeCuisine.id}>
+                      {typeCuisine.logo_url}
                       {typeCuisine.nom}
                     </option>
                   ))}

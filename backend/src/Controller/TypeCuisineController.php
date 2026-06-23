@@ -33,7 +33,8 @@ class TypeCuisineController extends AbstractController
 
   #[Route('/api/restaurant/type-cuisine/get', name: 'get_restaurant_type_cuisine', methods: ['GET'])]
   public function getRestaurantTypesCuisine(
-    RestaurantRepository $restaurantRepository
+    RestaurantRepository $restaurantRepository,
+    TypeCuisineRepository $typeCuisineRepository
   ) {
     $restaurateur = $this->getUser();
 
@@ -58,6 +59,7 @@ class TypeCuisineController extends AbstractController
     foreach ($restaurant->getTypeCuisines() as $typeCuisine) {
       $typesCuisineData[] = [
         'id' => $typeCuisine->getId(),
+        'logo_url' => $typeCuisine->getLogoUrl(),
         'nom' => $typeCuisine->getNom()
       ];
     }

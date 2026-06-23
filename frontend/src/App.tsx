@@ -10,6 +10,16 @@ import Menu from "./components/Menu";
 import Parametres from "./components/Parametres";
 import Reservation from "./components/Reservation";
 
+
+/*
+Cette page concerne l'inscription et la connexion de l'espace Restaurateur
+
+Elle possède plusieurs states :
+1. 
+*/
+
+
+
 type Mode = "login" | "register";
 
 type Horaire = {

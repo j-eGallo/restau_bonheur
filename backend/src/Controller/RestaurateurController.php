@@ -23,6 +23,30 @@ use Symfony\Component\Routing\Annotation\Route;
 class RestaurateurController extends AbstractController
 {
 
+  /*
+    1. ROUTE api/registerRestaurateur :
+    Inscription du restaurateur
+--------------------------------------------------------------
+    2. ROUTE api/loginRestaurateur :
+    Connexion du restaurateur
+--------------------------------------------------------------
+    3. ROUTE api/restaurateur/me :
+    Récupérer restaurateur
+--------------------------------------------------------------    
+    4. ROUTE api/updateRestaurateur :
+    Modifier le restaurateur (coordonnées)
+--------------------------------------------------------------
+    5. ROUTE api/logoutRestaurateur :
+    Déconnexion restaurateur
+--------------------------------------------------------------
+    6. ROUTE api/deleteRestaurateur :
+    Supprimer le compte restaurateur 
+  */
+
+
+
+
+  // Route d'inscription du restaurateur avec la création de son restaurant
   #[Route('/api/registerRestaurateur', methods: ['POST'])]
   public function registerRes(
     Request $request,
@@ -31,6 +55,7 @@ class RestaurateurController extends AbstractController
   ) {
     $step = 'start';
 
+    // lecture des données
     try {
       $step = 'lecture_formdata';
 
@@ -52,14 +77,17 @@ class RestaurateurController extends AbstractController
         ], 400);
       }
 
+      // Exige la soumission un logo
       if (!$logoFile) {
         return $this->json([
           'error' => 'Logo obligatoire'
         ], 400);
       }
 
+
       $step = 'lecture_champs';
 
+      // DÉFINITIONS DES DONNÉES À INJECTER DANS LA BASE DE DONNÉES
       $nom = $data['nom'] ?? null;
       $prenom = $data['prenom'] ?? null;
       $email = $data['email'] ?? null;
@@ -67,27 +95,32 @@ class RestaurateurController extends AbstractController
       $password = $data['password'] ?? null;
       $restaurantData = $data['restaurant'] ?? null;
 
+      // VERIFIE SI LES CHAMPS SONT BIEN REMPLIS 
       if (!$nom || !$prenom || !$email || !$telephone || !$password || !$restaurantData) {
         return $this->json([
           'error' => 'Champs restaurateur ou restaurant manquants',
           'data_recue' => $data
         ], 400);
       }
-
+      // VÉRIFIE SI LES HORAIRES SONT BIEN RENSEIGNÉES
       if (empty($restaurantData['horaires'])) {
         return $this->json([
           'error' => 'Les horaires sont obligatoires'
         ], 400);
       }
 
+
       $step = 'verification_email';
 
+
+      // RECHERCHER SI LE RESTAURATEUR A SON EMAIL DÉJÀ INSCRIT DANS LA BDD 
       $existingUser = $entityManager
         ->getRepository(Restaurateur::class)
         ->findOneBy([
           'email' => $email
         ]);
 
+      // ERREUR SI DÉJÀ INSCRIT
       if ($existingUser) {
         return $this->json([
           'error' => 'Email déjà existant !',
@@ -96,6 +129,7 @@ class RestaurateurController extends AbstractController
         ], 400);
       }
 
+      // AJOUT DU LOGO
       $step = 'upload_logo';
 
       $uploadDir = $this->getParameter('kernel.project_dir') . '/public/uploads/restaurants';
@@ -123,6 +157,9 @@ class RestaurateurController extends AbstractController
 
       $logoUrl = '/uploads/restaurants/' . $newFilename;
 
+
+
+      // CRÉATION/INSCRIPTION DU RESTAURATEUR
       $step = 'creation_restaurateur';
 
       $restaurateur = new Restaurateur();
@@ -137,10 +174,12 @@ class RestaurateurController extends AbstractController
 
       $entityManager->persist($restaurateur);
 
+      // CRÉEATION DU RESTAURANT 
       $step = 'creation_restaurant';
 
       $restaurant = new Restaurant();
 
+      // DÉFINITION DES DONNÉES DU RESTAURANT ENVOYÉES DANS LA BDD
       $restaurant->setNom($restaurantData['nom']);
       $restaurant->setNmRue($restaurantData['nm_rue']);
       $restaurant->setRue($restaurantData['rue']);
@@ -153,6 +192,7 @@ class RestaurateurController extends AbstractController
 
       $entityManager->persist($restaurant);
 
+      // ATTRIBUTION DES TYPES DE CUISINE AU RESTAURANT
       $step = 'liaison_types_cuisine';
 
       $cuisines = $restaurantData['cuisines'] ?? [];
@@ -173,6 +213,7 @@ class RestaurateurController extends AbstractController
         $restaurant->addTypeCuisine($typeCuisine);
       }
 
+      // AJOUT DES HORAIRES
       $step = 'creation_horaires';
 
       foreach ($restaurantData['horaires'] as $horaireData) {
@@ -250,6 +291,8 @@ class RestaurateurController extends AbstractController
     }
   }
 
+
+  // CONNEXION DU RESTAURATEUR
   #[Route('/api/loginRestaurateur', methods: ['POST'])]
   public function loginRes(
     Request $request,
@@ -266,6 +309,8 @@ class RestaurateurController extends AbstractController
       ], 400);
     }
 
+
+    // VÉRIFICATION CHAMPS BIEN REMPLIS
     $email = $data['email'] ?? null;
     $password = $data['password'] ?? null;
 
@@ -275,6 +320,7 @@ class RestaurateurController extends AbstractController
       ], 400);
     }
 
+    // CHERCHER LE RESTAURATEUR DANS LA BDD (VIA SON EMAIL)
     $user = $restaurateurRepository->findOneBy([
       'email' => $email
     ]);
@@ -285,14 +331,17 @@ class RestaurateurController extends AbstractController
       ], 401);
     }
 
+    // VÉRIFIE SI LE MDP EST CORRECT
     if (!$passwordHasher->isPasswordValid($user, $password)) {
       return $this->json([
         'error' => 'Identifiants invalides'
       ], 401);
     }
 
+    // CRÉATION D'UN NOUVEAU TOKEN À CHAQUE CONNEXION D'UN UTILISATEUR
     $token = $JWTManager->create($user);
 
+    // MESSAGE AFFICHANT LES INFORMATIONS DE L'UTILISATEUR CONNECTÉ
     return $this->json([
       'token' => $token,
       'user' => [
@@ -301,7 +350,6 @@ class RestaurateurController extends AbstractController
         'prenom' => $user->getPrenom()
       ]
     ]);
-
   }
 
   #[Route('/api/restaurateur/me', methods: ['GET'])]
@@ -361,7 +409,7 @@ class RestaurateurController extends AbstractController
   ) {
 
 
-
+    // Conversion des data en tableau PHP
     $data = json_decode($request->getContent(), true);
 
     $nom = $data['nom'] ?? null;
@@ -373,14 +421,10 @@ class RestaurateurController extends AbstractController
     $password = $data['password'] ?? null;
 
 
-
+    // Recherche du restaurateur par son email
     $restaurateur = $restaurateurRepository->findOneBy([
       'email' => $currentEmail
     ]);
-
-
-
-
 
     if (!$restaurateur) {
       return $this->json([
@@ -388,21 +432,20 @@ class RestaurateurController extends AbstractController
       ], 404);
     }
 
-
     $passwordIsValid = $passwordHasher->isPasswordValid(
       $restaurateur,
       $currentPassword
     );
 
 
-
+    // Vérification du mot de passe pour valider la modif du restaurateur
     if (!$passwordIsValid) {
       return $this->json([
         'error' => 'Mot de passe incorrect'
       ], 404);
     }
 
-
+    // Mise à jour des informations modifiées (non obligatoires)
     if ($nom) {
       $restaurateur->setNom($nom);
     }
@@ -463,6 +506,8 @@ class RestaurateurController extends AbstractController
     EntityManagerInterface $entityManager,
     UserPasswordHasherInterface $passwordHasher
   ) {
+
+    // Récupération des infos du restaurateur
     $data = json_decode($request->getContent(), true);
 
     if (!$data) {
@@ -471,6 +516,7 @@ class RestaurateurController extends AbstractController
       ], 400);
     }
 
+    // Vérification des champs obligatoires
     $email = $data['email'] ?? null;
     $password = $data['password'] ?? null;
 
@@ -480,6 +526,7 @@ class RestaurateurController extends AbstractController
       ], 400);
     }
 
+    // Recherche de l'utilisateur par son email et erreur si inexistant
     $user = $restaurateurRepository->findOneBy([
       'email' => $email
     ]);
@@ -490,17 +537,22 @@ class RestaurateurController extends AbstractController
       ], 404);
     }
 
+    // Vérification du mot de passe
     if (!$passwordHasher->isPasswordValid($user, $password)) {
       return $this->json([
         'error' => 'Identifiants invalides'
       ], 401);
     }
 
+    // Recherche du restaurant associé au restaurateur (le $user)
     $restaurant = $restaurantRepository->findOneBy([
       'restaurateur' => $user
     ]);
 
+    // Condition et boucles pour supprimer toutes les infos liées au restaurant du restaurateur
     if ($restaurant) {
+
+      // Suppression photo du restaurant
       $photos = $entityManager
         ->getRepository(Photo::class)
         ->findBy([
@@ -511,6 +563,7 @@ class RestaurateurController extends AbstractController
         $entityManager->remove($photo);
       }
 
+      // Suppression plat du restaurant
       $plats = $entityManager
         ->getRepository(Plat::class)
         ->findBy([
@@ -521,6 +574,7 @@ class RestaurateurController extends AbstractController
         $entityManager->remove($plat);
       }
 
+      // Suppression réservations du restaurant
       $reservations = $entityManager
         ->getRepository(Reservation::class)
         ->findBy([
@@ -531,6 +585,7 @@ class RestaurateurController extends AbstractController
         $entityManager->remove($reservation);
       }
 
+      // Suppression avis du restaurant
       $avis = $entityManager
         ->getRepository(Avis::class)
         ->findBy([
@@ -541,6 +596,7 @@ class RestaurateurController extends AbstractController
         $entityManager->remove($avi);
       }
 
+      // Suppression horaires du restaurant
       $horaires = $entityManager
         ->getRepository(Horaire::class)
         ->findBy([
@@ -551,6 +607,7 @@ class RestaurateurController extends AbstractController
         $entityManager->remove($horaire);
       }
 
+      // Suppression de la liaison restaurant -> typeCuisine
       foreach ($restaurant->getTypeCuisines() as $typeCuisine) {
         $restaurant->removeTypeCuisine($typeCuisine);
       }
@@ -558,6 +615,7 @@ class RestaurateurController extends AbstractController
       $entityManager->remove($restaurant);
     }
 
+    // Exécution finale de la fonction
     $entityManager->remove($user);
     $entityManager->flush();
 

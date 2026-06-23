@@ -14,6 +14,25 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ClientController extends AbstractController
 {
 
+  /*
+    1. ROUTE api/registerClient :
+    Inscription du client
+--------------------------------------------------------------
+    2. ROUTE api/loginClient :
+    Connexion du client
+--------------------------------------------------------------
+    3. ROUTE api/logoutClient
+    Déconnexion du client
+--------------------------------------------------------------  
+    4. ROUTE api/updateClient :
+    Modifier le client
+--------------------------------------------------------------    
+    5. ROUTE api/deleteClient :
+    Supprimer le client
+--------------------------------------------------------------
+  */
+
+
   #[Route('/api/registerClient', methods: ['POST'])]
   public function registerClient(
     Request $request,
@@ -90,6 +109,83 @@ final class ClientController extends AbstractController
       ], 500);
     }
   }
+
+
+
+
+  #[Route('/api/loginClient', methods: ['POST'])]
+  public function loginClient(
+    Request $request,
+    ClientRepository $clientRepository,
+    UserPasswordHasherInterface $passwordHasher,
+    JWTTokenManagerInterface $JWTManager
+  ) {
+
+    $data = json_decode($request->getContent(), true);
+
+    if (json_last_error() !== JSON_ERROR_NONE) {
+
+      return $this->json([
+        'error' => json_last_error_msg()
+      ], 400);
+    }
+
+    $email = $data['email'] ?? null;
+    $password = $data['password'] ?? null;
+
+    if (!$email || !$password) {
+
+      return $this->json([
+        'error' => 'Champs manquants'
+      ], 400);
+    }
+
+    $client = $clientRepository->findOneBy([
+      'email' => $email
+    ]);
+
+    if (!$client) {
+
+      return $this->json([
+        'error' => 'Identifiants invalides'
+      ], 401);
+    }
+
+    if (
+      !$passwordHasher->isPasswordValid(
+        $client,
+        $password
+      )
+    ) {
+
+      return $this->json([
+        'error' => 'Identifiants invalides'
+      ], 401);
+    }
+
+    $token = $JWTManager->create($client);
+
+    return $this->json([
+      'token' => $token,
+      'client' => [
+        'id' => $client->getId(),
+        'nom' => $client->getNom(),
+        'prenom' => $client->getPrenom()
+      ]
+    ]);
+  }
+
+
+  #[Route('/api/logoutClient', methods: ['POST'])]
+  public function logoutClient()
+  {
+
+    return $this->json([
+      'message' => 'Client deconnecté'
+    ]);
+
+  }
+
 
 
   #[Route('/api/updateClient', methods: ['POST'])]
@@ -171,70 +267,6 @@ final class ClientController extends AbstractController
 
     return $this->json([
       'message' => 'Client modifié avec succès'
-    ]);
-  }
-
-
-
-  #[Route('/api/loginClient', methods: ['POST'])]
-  public function loginClient(
-    Request $request,
-    ClientRepository $clientRepository,
-    UserPasswordHasherInterface $passwordHasher,
-    JWTTokenManagerInterface $JWTManager
-  ) {
-
-    $data = json_decode($request->getContent(), true);
-
-    if (json_last_error() !== JSON_ERROR_NONE) {
-
-      return $this->json([
-        'error' => json_last_error_msg()
-      ], 400);
-    }
-
-    $email = $data['email'] ?? null;
-    $password = $data['password'] ?? null;
-
-    if (!$email || !$password) {
-
-      return $this->json([
-        'error' => 'Champs manquants'
-      ], 400);
-    }
-
-    $client = $clientRepository->findOneBy([
-      'email' => $email
-    ]);
-
-    if (!$client) {
-
-      return $this->json([
-        'error' => 'Identifiants invalides'
-      ], 401);
-    }
-
-    if (
-      !$passwordHasher->isPasswordValid(
-        $client,
-        $password
-      )
-    ) {
-
-      return $this->json([
-        'error' => 'Identifiants invalides'
-      ], 401);
-    }
-
-    $token = $JWTManager->create($client);
-
-    return $this->json([
-      'token' => $token,
-      'client' => [
-        'id' => $client->getId(),
-        'nom' => $client->getNom(),
-        'prenom' => $client->getPrenom()
-      ]
     ]);
   }
 
