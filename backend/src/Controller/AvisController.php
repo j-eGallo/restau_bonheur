@@ -69,7 +69,7 @@ class AvisController extends AbstractController
       $avis = new Avis();
 
       // Vérifier que c'est le bon client
-      if ($reservation->getClient() !== $client) {
+      if ($reservation->getClient()->getId() !== $client->getId()) {
         return $this->json([
           'error' => 'le client ne correspond pas !'
         ], 403);
