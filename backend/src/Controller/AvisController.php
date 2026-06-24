@@ -7,6 +7,7 @@ use App\Entity\Avis;
 use App\Entity\Client;
 use App\Repository\AvisRepository;
 use App\Repository\RestaurantRepository;
+use App\Repository\RestaurateurRep;
 use App\Repository\ReservationRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -18,8 +19,10 @@ use Symfony\Component\Routing\Annotation\Route;
 
 /*
   1. ROUTE api/client/avis/add :
-  Attribution de l'avis du client au Restaurant après réservation
+  Attribution de l'avis du client au restaurant après réservation
 --------------------------------------------------------------
+  2. ROUTE /api/avis/getAvis' :
+  Récupérer la note (la moyenne) du restaurant
 */
 
 class AvisController extends AbstractController
@@ -113,7 +116,6 @@ class AvisController extends AbstractController
       }
 
 
-      // Récupération du restaurant lié à la réservation
       $restaurant = $reservation->getRestaurant();
       $avis->setReservation($reservation);
       $avis->setRestaurant($restaurant);
@@ -137,4 +139,64 @@ class AvisController extends AbstractController
       ], 500);
     }
   }
+
+
+
+
+  #[Route('/api/avis/getAvis/{id}', methods: ['GET'])]
+  public function getAvis(
+    int $id,
+    AvisRepository $avisRepository,
+    RestaurantRepository $restaurantRepository
+
+
+  ): JsonResponse {
+
+    // Recherche restaurant du restaurateur et vérification
+    $restaurant = $restaurantRepository->find($id);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Impossible de trouver le restaurant'
+      ], 404);
+    }
+
+
+    // Récupérer les avis du restaurant
+    $avis = $avisRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
+
+    // Nombre total t'avis
+    $nombreAvis = count($avis);
+
+    // Addition de tous les avis
+    $total = 0;
+
+    if ($nombreAvis === 0) {
+      return $this->json([
+        'error' => 'Pas de notes existantes',
+        'note_moyenne' => null,
+        'nombre_avis' => 0
+      ]);
+    }
+
+    // Calcul total des avis
+    foreach ($avis as $aviRecent) {
+      $total = $total + $aviRecent->getNote();
+    }
+
+
+    // Moyenne des avis
+    $moyenne = $total / $nombreAvis;
+
+
+
+    return $this->json([
+      'note_moyenne' => round($moyenne, 1),
+      'nombre_avis' => $nombreAvis
+    ]);
+
+  }
+
 }
