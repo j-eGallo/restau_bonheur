@@ -6,6 +6,7 @@ import Menu from "../assets/food.png";
 import Photo from "../assets/photo.png";
 import { Link } from "react-router-dom";
 import "./monRestaurant.css";
+import Note from "./Note";
 
 type Profile = {
   restaurateur: {
@@ -14,6 +15,7 @@ type Profile = {
     prenom: string;
   };
   restaurant: {
+    id: number;
     nom: string;
     nm_rue: string;
     rue: string;
@@ -272,9 +274,11 @@ export default function MonRestaurant() {
               </div>
             )}
 
-            <div className="restaurant-note">
-              <h2>Note restaurant</h2>
-            </div>
+            {profile && (
+              <div className="restaurant-note">
+                <Note idRestaurant={profile.restaurant.id} />
+              </div>
+            )}
           </section>
 
           <section className="restaurant-places">

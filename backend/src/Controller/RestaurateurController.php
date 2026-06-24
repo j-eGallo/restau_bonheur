@@ -384,6 +384,7 @@ class RestaurateurController extends AbstractController
           'telephone' => $restaurateur->getTelephone()
         ],
         'restaurant' => [
+          'id' => $restaurant->getId(),
           'nom' => $restaurant->getNom(),
           'nm_rue' => $restaurant->getNmRue(),
           'rue' => $restaurant->getRue(),
