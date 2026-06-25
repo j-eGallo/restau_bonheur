@@ -152,7 +152,7 @@ class AvisController extends AbstractController
 
   ): JsonResponse {
 
-    // Recherche restaurant du restaurateur et vérification
+    // Recherche restaurant par son id
     $restaurant = $restaurantRepository->find($id);
 
     if (!$restaurant) {
@@ -167,10 +167,10 @@ class AvisController extends AbstractController
       'restaurant' => $restaurant
     ]);
 
-    // Nombre total t'avis
+    // Nombre total d'avis
     $nombreAvis = count($avis);
 
-    // Addition de tous les avis
+    // Addition de toutes les notes
     $total = 0;
 
     if ($nombreAvis === 0) {
