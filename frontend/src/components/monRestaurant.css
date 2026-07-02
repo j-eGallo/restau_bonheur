@@ -20,7 +20,7 @@
   text-align: center;
   font-size: 32px;
   font-weight: 500;
-  color: #282625;
+  color: #2d2d2d;
 }
 
 .restaurant-top {
@@ -102,7 +102,7 @@
 .places-modal {
   width: 320px;
   min-height: 270px;
-  background-color: #777777;
+  background-color: #2d2d2d;
   border-radius: 2px;
   padding: 35px 30px;
   box-sizing: border-box;
@@ -141,7 +141,7 @@
   border: none;
   border-radius: 50%;
   background-color: #ffffff;
-  color: #777777;
+  color: #2d2d2d;
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
@@ -154,7 +154,7 @@
   border: none;
   border-radius: 3px;
   background-color: #ffffff;
-  color: #282625;
+  color: #2d2d2d;
   padding: 7px 20px;
   font-size: 11px;
   font-weight: 700;

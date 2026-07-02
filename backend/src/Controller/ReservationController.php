@@ -8,6 +8,9 @@ use App\Enum\ServiceEnum;
 use App\Repository\ReservationRepository;
 use App\Repository\RestaurantRepository;
 use Doctrine\ORM\EntityManagerInterface;
+
+use OpenApi\Attributes as OA;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,6 +19,46 @@ use Symfony\Component\Routing\Annotation\Route;
 final class ReservationController extends AbstractController
 {
 
+
+  #[OA\Post(
+    path: '/api/reservation/addReservation',
+    summary: 'Créer une réservation',
+    description: 'Permet à un client connecté de créer une réservation dans un restaurant.',
+    tags: ['Réservations']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['id_restaurant', 'date', 'heure', 'service', 'nb_personnes'],
+      properties: [
+        new OA\Property(property: 'id_restaurant', type: 'integer', example: 1),
+        new OA\Property(property: 'date', type: 'string', example: '2026-07-02'),
+        new OA\Property(property: 'heure', type: 'string', example: '19:30'),
+        new OA\Property(property: 'service', type: 'string', example: 'soir'),
+        new OA\Property(property: 'nb_personnes', type: 'integer', example: 4)
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 201,
+    description: 'Réservation créée avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'JSON invalide, champs manquants ou pas assez de places disponibles'
+  )]
+  #[OA\Response(
+    response: 401,
+    description: 'Utilisateur non connecté'
+  )]
+  #[OA\Response(
+    response: 404,
+    description: 'Restaurant introuvable'
+  )]
+  #[OA\Response(
+    response: 500,
+    description: 'Erreur serveur'
+  )]
   #[Route('/api/reservation/addReservation', methods: ['POST'])]
   public function addReservation(
     Request $request,
@@ -202,6 +245,48 @@ final class ReservationController extends AbstractController
     }
   }
 
+
+
+  #[OA\Post(
+    path: '/api/reservation/updateReservation',
+    summary: 'Modifier une réservation',
+    description: 'Permet à un client connecté de modifier une réservation existante.',
+    tags: ['Réservations']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['id', 'id_restaurant', 'date', 'heure', 'service', 'nb_personnes'],
+      properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 12),
+        new OA\Property(property: 'id_restaurant', type: 'integer', example: 1),
+        new OA\Property(property: 'date', type: 'string', example: '2026-07-03'),
+        new OA\Property(property: 'heure', type: 'string', example: '20:00'),
+        new OA\Property(property: 'service', type: 'string', example: 'soir'),
+        new OA\Property(property: 'nb_personnes', type: 'integer', example: 2)
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Réservation modifiée avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'JSON invalide ou pas assez de places disponibles'
+  )]
+  #[OA\Response(
+    response: 401,
+    description: 'Utilisateur non connecté'
+  )]
+  #[OA\Response(
+    response: 404,
+    description: 'Réservation ou restaurant introuvable'
+  )]
+  #[OA\Response(
+    response: 500,
+    description: 'Erreur serveur'
+  )]
   #[Route('/api/reservation/updateReservation', methods: ['POST'])]
   public function updateReservation(
     Request $request,
@@ -314,6 +399,38 @@ final class ReservationController extends AbstractController
 
 
 
+
+  #[OA\Post(
+    path: '/api/reservation/deleteReservation',
+    summary: 'Supprimer une réservation',
+    description: 'Permet de supprimer une réservation existante à partir de son identifiant.',
+    tags: ['Réservations']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['id'],
+      properties: [
+        new OA\Property(property: 'id', type: 'integer', example: 12)
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Réservation supprimée avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'JSON invalide ou ID manquant'
+  )]
+  #[OA\Response(
+    response: 404,
+    description: 'Réservation introuvable'
+  )]
+  #[OA\Response(
+    response: 500,
+    description: 'Erreur serveur'
+  )]
   #[Route('/api/reservation/deleteReservation', methods: ['POST'])]
   public function deleteReservation(
     Request $request,

@@ -38,7 +38,7 @@
 .photo-fildariane span,
 .photo-fildariane p {
   margin: 0;
-  color: #282625;
+  color: #2d2d2d;
 }
 
 .photo-logo-section {
@@ -50,7 +50,7 @@
 .photo-logo-box {
   width: 220px;
   height: 180px;
-  border: 2px solid #282625;
+  border: 2px solid #2d2d2d;
   position: relative;
   display: flex;
   align-items: center;
@@ -72,7 +72,7 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #282625;
+  border: 1px solid #2d2d2d;
   background-color: white;
   cursor: pointer;
   font-weight: 900;
@@ -107,7 +107,7 @@
 
 .photo-item {
   height: 150px;
-  border: 2px solid #282625;
+  border: 2px solid #2d2d2d;
   position: relative;
   overflow: hidden;
   background-color: white;
@@ -126,9 +126,9 @@
   width: 30px;
   height: 30px;
   border-radius: 50%;
-  border: 1px solid #282625;
+  border: 1px solid #2d2d2d;
   background-color: white;
-  color: #282625;
+  color: #2d2d2d;
   cursor: pointer;
   font-size: 20px;
   line-height: 20px;
@@ -146,7 +146,7 @@
 
 .photo-modal {
   width: 360px;
-  background-color: #777777;
+  background-color: #2d2d2d;
   padding: 35px;
   border-radius: 5px;
   display: flex;
@@ -170,7 +170,7 @@
 
 .photo-modal button {
   background-color: white;
-  color: #282625;
+  color: #2d2d2d;
   border: none;
   padding: 9px;
   font-weight: 900;

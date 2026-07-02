@@ -5,8 +5,12 @@ namespace App\Controller;
 use App\Entity\Client;
 use App\Repository\ClientRepository;
 use Doctrine\ORM\EntityManagerInterface;
+
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use OpenApi\Attributes as OA;
+
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Routing\Annotation\Route;
@@ -33,6 +37,38 @@ final class ClientController extends AbstractController
   */
 
 
+
+  #[OA\Post(
+    path: '/api/registerClient',
+    summary: 'Inscription d’un client',
+    description: 'Permet de créer un compte client dans l’application Restau Bonheur.',
+    tags: ['Client']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['nom', 'prenom', 'email', 'telephone', 'password'],
+      properties: [
+        new OA\Property(property: 'nom', type: 'string', example: 'Dupont'),
+        new OA\Property(property: 'prenom', type: 'string', example: 'Jean'),
+        new OA\Property(property: 'email', type: 'string', example: 'jean.dupont@email.com'),
+        new OA\Property(property: 'telephone', type: 'string', example: '0601020304'),
+        new OA\Property(property: 'password', type: 'string', example: 'Motdepasse123')
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 201,
+    description: 'Client créé avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'Données JSON invalides, champs manquants ou email déjà utilisé'
+  )]
+  #[OA\Response(
+    response: 500,
+    description: 'Erreur serveur'
+  )]
   #[Route('/api/registerClient', methods: ['POST'])]
   public function registerClient(
     Request $request,
@@ -113,6 +149,34 @@ final class ClientController extends AbstractController
 
 
 
+  #[OA\Post(
+    path: '/api/loginClient',
+    summary: 'Connexion d’un client',
+    description: 'Permet à un client de se connecter avec son email et son mot de passe. En cas de succès, un token JWT est retourné.',
+    tags: ['Client']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['email', 'password'],
+      properties: [
+        new OA\Property(property: 'email', type: 'string', example: 'jean.dupont@email.com'),
+        new OA\Property(property: 'password', type: 'string', example: 'Motdepasse123')
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Connexion réussie avec retour du token JWT'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'Données JSON invalides ou champs manquants'
+  )]
+  #[OA\Response(
+    response: 401,
+    description: 'Identifiants invalides'
+  )]
   #[Route('/api/loginClient', methods: ['POST'])]
   public function loginClient(
     Request $request,
@@ -176,6 +240,16 @@ final class ClientController extends AbstractController
   }
 
 
+  #[OA\Post(
+    path: '/api/logoutClient',
+    summary: 'Déconnexion d’un client',
+    description: 'Permet de déconnecter un client côté frontend. Avec JWT, la déconnexion consiste principalement à supprimer le token stocké côté client.',
+    tags: ['Client']
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Client déconnecté'
+  )]
   #[Route('/api/logoutClient', methods: ['POST'])]
   public function logoutClient()
   {
@@ -188,6 +262,43 @@ final class ClientController extends AbstractController
 
 
 
+  #[OA\Post(
+    path: '/api/updateClient',
+    summary: 'Modification du profil client',
+    description: 'Permet à un client de modifier ses informations personnelles après vérification de son mot de passe actuel.',
+    tags: ['Client']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['currentEmail', 'currentPassword'],
+      properties: [
+        new OA\Property(property: 'currentEmail', type: 'string', example: 'jean.dupont@email.com'),
+        new OA\Property(property: 'currentPassword', type: 'string', example: 'AncienMotdepasse123'),
+        new OA\Property(property: 'nom', type: 'string', example: 'Martin'),
+        new OA\Property(property: 'prenom', type: 'string', example: 'Jean'),
+        new OA\Property(property: 'email', type: 'string', example: 'jean.martin@email.com'),
+        new OA\Property(property: 'telephone', type: 'string', example: '0611223344'),
+        new OA\Property(property: 'password', type: 'string', example: 'NouveauMotdepasse123')
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Client modifié avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'Données JSON invalides'
+  )]
+  #[OA\Response(
+    response: 401,
+    description: 'Mot de passe incorrect'
+  )]
+  #[OA\Response(
+    response: 404,
+    description: 'Client introuvable'
+  )]
   #[Route('/api/updateClient', methods: ['POST'])]
   public function updateClient(
     Request $request,
@@ -272,6 +383,16 @@ final class ClientController extends AbstractController
 
 
 
+  #[OA\Post(
+    path: '/api/logoutClient',
+    summary: 'Déconnexion d’un client',
+    description: 'Permet de déconnecter un client côté frontend. Avec JWT, la déconnexion consiste principalement à supprimer le token stocké côté client.',
+    tags: ['Client']
+  )]
+  #[OA\Response(
+    response: 200,
+    description: 'Client déconnecté'
+  )]
   #[Route('/api/deleteClient', methods: ['POST'])]
   public function deleteClient(
     Request $request,

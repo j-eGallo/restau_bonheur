@@ -15,8 +15,8 @@
 
 .reservation-title {
   text-align: center;
-  color: #282625;
-  font-size: 34px;
+  color: #2d2d2d;
+  font-size: 32px;
   margin-bottom: 45px;
 }
 
@@ -35,7 +35,7 @@
   border-radius: 4px;
   font-weight: 700;
   background-color: white;
-  color: #282625;
+  color: #2d2d2d;
 }
 
 .reservation-date-zone {
@@ -50,8 +50,8 @@
   height: 34px;
   border-radius: 50%;
   border: none;
-  background-color: #dddddd;
-  color: #282625;
+  background-color: #999999;
+  color: #2d2d2d;
   font-size: 24px;
   font-weight: 900;
   cursor: pointer;
@@ -68,7 +68,7 @@
   border: 1px solid #999999;
   border-radius: 4px;
   background-color: white;
-  color: #282625;
+  color: #2d2d2d;
   font-weight: 800;
   cursor: pointer;
 }
@@ -84,7 +84,7 @@
   right: 0;
   width: 300px;
   background-color: white;
-  border: 1px solid #dddddd;
+  border: 1px solid #999999;
   box-shadow: 0 8px 25px rgba(0, 0, 0, 0.18);
   border-radius: 8px;
   padding: 15px;
@@ -100,7 +100,7 @@
 
 .reservation-calendar-header span {
   font-weight: 900;
-  color: #282625;
+  color: #2d2d2d;
   text-transform: capitalize;
 }
 
@@ -110,7 +110,7 @@
   border: none;
   border-radius: 50%;
   background-color: #eeeeee;
-  color: #282625;
+  color: #2d2d2d;
   font-size: 18px;
   font-weight: 900;
   cursor: pointer;
@@ -131,7 +131,7 @@
   text-align: center;
   font-size: 12px;
   font-weight: 900;
-  color: #777777;
+  color: #2d2d2d;
 }
 
 .reservation-calendar-grid {
@@ -146,7 +146,7 @@
   border: none;
   border-radius: 6px;
   background-color: transparent;
-  color: #282625;
+  color: #2d2d2d;
   font-weight: 800;
   cursor: pointer;
 }
@@ -189,7 +189,7 @@
 
 .reservation-summary div {
   background-color: white;
-  border: 1px solid #dddddd;
+  border: 1px solid #999999;
   border-left: 5px solid #ec5b15;
   border-radius: 8px;
   padding: 16px;
@@ -198,19 +198,19 @@
 
 .reservation-summary span {
   display: block;
-  color: #777777;
+  color: #2d2d2d;
   font-weight: 800;
   margin-bottom: 8px;
 }
 
 .reservation-summary strong {
-  color: #282625;
+  color: #2d2d2d;
   font-size: 24px;
 }
 
 .reservation-loading {
   text-align: center;
-  color: #777777;
+  color: #2d2d2d;
   font-weight: 800;
   margin-top: 45px;
 }
@@ -226,7 +226,7 @@
 }
 
 .reservation-empty-card p {
-  color: #777777;
+  color: #2d2d2d;
   font-weight: 800;
 }
 
@@ -242,7 +242,7 @@
   align-items: center;
   gap: 18px;
   background-color: white;
-  border: 1px solid #dddddd;
+  border: 1px solid #999999;
   border-radius: 8px;
   padding: 16px 18px;
   box-sizing: border-box;
@@ -261,7 +261,7 @@
 }
 
 .reservation-card-time strong {
-  color: #282625;
+  color: #2d2d2d;
   font-size: 22px;
 }
 
@@ -272,13 +272,13 @@
 
 .reservation-card-client h2 {
   margin: 0 0 6px 0;
-  color: #282625;
+  color: #2d2d2d;
   font-size: 20px;
 }
 
 .reservation-card-client p {
   margin: 0;
-  color: #777777;
+  color: #2d2d2d;
   font-weight: 700;
 }
 
@@ -296,7 +296,7 @@
 }
 
 .reservation-card-count span {
-  color: #282625;
+  color: #2d2d2d;
   font-weight: 800;
   font-size: 13px;
 }

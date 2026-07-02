@@ -14,6 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Annotation\Route;
+use OpenApi\Attributes as OA;
 
 
 
@@ -27,6 +28,52 @@ use Symfony\Component\Routing\Annotation\Route;
 
 class AvisController extends AbstractController
 {
+
+
+  #[OA\Post(
+    path: '/api/client/avis/add',
+    summary: 'Ajouter un avis',
+    description: 'Permet à un client connecté d’ajouter une note à un restaurant après une réservation. L’avis ne peut être ajouté qu’après un délai de 24 heures suivant la réservation.',
+    tags: ['Avis']
+  )]
+  #[OA\RequestBody(
+    required: true,
+    content: new OA\JsonContent(
+      required: ['id_reservation', 'note'],
+      properties: [
+        new OA\Property(property: 'id_reservation', type: 'integer', example: 15),
+        new OA\Property(property: 'note', type: 'integer', example: 5)
+      ]
+    )
+  )]
+  #[OA\Response(
+    response: 201,
+    description: 'Avis ajouté avec succès'
+  )]
+  #[OA\Response(
+    response: 400,
+    description: 'Champs vides ou note invalide'
+  )]
+  #[OA\Response(
+    response: 401,
+    description: 'Utilisateur non connecté'
+  )]
+  #[OA\Response(
+    response: 403,
+    description: 'Client non autorisé ou délai de 24h non respecté'
+  )]
+  #[OA\Response(
+    response: 404,
+    description: 'Réservation introuvable'
+  )]
+  #[OA\Response(
+    response: 409,
+    description: 'Avis déjà existant pour cette réservation'
+  )]
+  #[OA\Response(
+    response: 500,
+    description: 'Erreur serveur'
+  )]
   #[Route('/api/client/avis/add', methods: ['POST'])]
 
   // Route /addAvis permettant au client de noter le restaurant
