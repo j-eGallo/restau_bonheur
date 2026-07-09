@@ -1,14 +1,22 @@
 import Register from "@/components/Register";
-import { View, Text, StyleSheet } from "react-native";
+import Login from "@/components/Login";
+import { useState } from "react";
+import { View, StyleSheet } from "react-native";
 
 export default function Auth() {
+  const [mode, setMode] = useState<"register" | "login">("register");
+
   return (
     <View style={styles.container}>
       <View style={styles.topHalf} />
       <View style={styles.bottomHalf} />
 
       <View style={styles.content}>
-        <Register />
+        {mode === "register" ? (
+          <Register onSwitchToLogin={() => setMode("login")} />
+        ) : (
+          <Login onSwitchToRegister={() => setMode("register")} />
+        )}
       </View>
     </View>
   );
