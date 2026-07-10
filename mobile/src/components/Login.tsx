@@ -1,5 +1,7 @@
 import { View, TextInput, Image, StyleSheet, Pressable } from "react-native";
+import { useState } from "react";
 import AppText from "../components/AppText";
+import { router } from "expo-router"
 
 
 // Props pour retourner sur Register si pas de compte
@@ -8,6 +10,47 @@ type LoginProps = {
 };
 
 export default function Login({ onSwitchToRegister }: LoginProps) {
+
+    // States pour chaque champs
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+  
+
+  // Valider Inscription
+  const handleLogin = async () => {
+  try {
+    
+    
+    
+    const response = await fetch("http://localhost:8000/api/loginClient", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        email: email,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("STATUS :", response.status);
+    console.log("REPONSE :", data);
+
+    if (!response.ok) {
+      console.log("Erreur connexion :", data);
+      return;
+    }
+
+    console.log("Client bien connecté :", data);
+    router.replace("/home");
+
+    onSwitchToRegister();
+  } catch (error) {
+    console.log("Erreur fetch inscription :", error);
+  }
+};
   return (
     <View style={styles.root}>
       <View style={styles.card}>
@@ -23,6 +66,8 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
               style={styles.input}
               keyboardType="email-address"
               autoCapitalize="none"
+              value={email}
+              onChangeText={setEmail}
             />
           </View>
 
@@ -31,10 +76,12 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
             <TextInput
               style={styles.input}
               secureTextEntry
+              value={password}
+              onChangeText={setPassword}
             />
           </View>
 
-          <Pressable style={styles.submit}>
+          <Pressable style={styles.submit} onPress={handleLogin}>
             <AppText style={styles.btnext}>CONNEXION</AppText>
           </Pressable>
 

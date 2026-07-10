@@ -1,20 +1,79 @@
 import { View, TextInput, Image, StyleSheet, Pressable } from "react-native";
-import { useEffect } from "react";
-import AppText from "../components/AppText";
-
 import { useState } from "react";
+
+import AppText from "../components/AppText";
 
 type RegisterProps = {
   onSwitchToLogin: () => void;
 };
 
-
-
 export default function Register({ onSwitchToLogin }: RegisterProps) {
+
 
   // State pour valider la première étape du formulaire d'inscription (en gros la première partie)
   const [etapeUneOk, setEtapeUneOk] = useState(false);
+
+
+  // States pour chaque champs
+  const [nom, setNom] = useState("");
+  const [prenom, setPrenom] = useState("");
+  const [email, setEmail] = useState("");
+  const [telephone, setTelephone] = useState("");
+  const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+
+
+// Valider étape une du formulaire 
+const etapeUneComplete =
+  nom.trim() !== "" &&
+  prenom.trim() !== "" &&
+  email.trim() !== "" &&
+  telephone.trim() !== "";
+
+
+// Valider Inscription
+  const handleRegister = async () => {
+  if (password !== confirmPassword) {
+    console.log("Les mots de passe ne correspondent pas");
+    return;
+  }
+
+  try {
     
+    
+    
+    const response = await fetch("http://localhost:8000/api/registerClient", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        nom: nom,
+        prenom: prenom,
+        email: email,
+        telephone: telephone,
+        password: password,
+      }),
+    });
+
+    const data = await response.json();
+
+    console.log("STATUS :", response.status);
+    console.log("REPONSE :", data);
+
+    if (!response.ok) {
+      console.log("Erreur inscription :", data);
+      return;
+    }
+
+    console.log("Client inscrit :", data);
+
+    onSwitchToLogin();
+  } catch (error) {
+    console.log("Erreur fetch inscription :", error);
+  }
+};
+
 
 
 
@@ -31,12 +90,12 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
             <>
               <View style={styles.field}>
                 <AppText style={styles.label}>Nom :</AppText>
-                <TextInput style={styles.input} />
+                <TextInput style={styles.input} value={nom} onChangeText={setNom}/>
               </View>
 
               <View style={styles.field}>
                 <AppText style={styles.label}>Prénom :</AppText>
-                <TextInput style={styles.input} />
+                <TextInput style={styles.input} value={prenom} onChangeText={setPrenom}/>
               </View>
 
               <View style={styles.field}>
@@ -45,6 +104,8 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
                   style={styles.input}
                   keyboardType="email-address"
                   autoCapitalize="none"
+                   value={email}
+                  onChangeText={setEmail}
                 />
               </View>
 
@@ -53,15 +114,23 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
                 <TextInput
                   style={styles.input}
                   keyboardType="phone-pad"
+                   value={telephone}
+                   onChangeText={setTelephone}
                 />
               </View>
 
               <Pressable
-                style={styles.submit}
-                onPress={() => setEtapeUneOk(true)}
-              >
-                <AppText style={styles.btnext}>SUIVANT</AppText>
-              </Pressable>
+                style={[
+                  styles.submit,
+                  !etapeUneComplete && styles.submitDisabled
+                ]}
+                onPress={() => {
+                  if (!etapeUneComplete) return;
+                  setEtapeUneOk(true);
+                  }}
+>
+  <AppText style={styles.btnext}>SUIVANT</AppText>
+</Pressable>
             </>
           ) : (
             <>
@@ -70,22 +139,32 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
                 <TextInput
                   style={styles.input}
                   secureTextEntry
+                   value={password}
+                   onChangeText={setPassword}
                 />
               </View>
 
               <View style={styles.field}>
-                <AppText style={styles.label}>Confirmer le mot de passe :</AppText>
+                <AppText style={styles.label}>
+                  Confirmer le mot de passe :
+                </AppText>
                 <TextInput
                   style={styles.input}
                   secureTextEntry
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
                 />
               </View>
 
               <Pressable
                 style={styles.submit}
-                onPress={() => console.log("Inscription")}
+                onPress={handleRegister}
               >
-                <AppText style={styles.btnext}>INSCRIPTION</AppText>
+                <AppText 
+                style={styles.btnext} 
+                >
+                  INSCRIPTION
+                </AppText>
               </Pressable>
 
               <Pressable
@@ -96,16 +175,18 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
               </Pressable>
             </>
           )}
-                    <Pressable onPress={onSwitchToLogin}>
-                      <AppText style={styles.switchText}>
-                        Pas encore de compte ? S'inscrire
-                      </AppText>
-                    </Pressable>
+
+          <Pressable onPress={onSwitchToLogin}>
+            <AppText style={styles.switchText}>
+              Déjà un compte ? Se connecter
+            </AppText>
+          </Pressable>
         </View>
       </View>
     </View>
   );
 }
+
 
 const styles = StyleSheet.create({
   root: {
@@ -172,6 +253,10 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
 
+  submitDisabled: {
+  backgroundColor: "#bdbdbd",
+} ,
+
   backButton: {
     alignSelf: "center",
   },
@@ -186,5 +271,5 @@ const styles = StyleSheet.create({
     color: "#ec5b15",
     textAlign: "center",
     fontWeight: "bold",
-},
+}
 });
