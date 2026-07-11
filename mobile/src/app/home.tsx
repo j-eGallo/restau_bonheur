@@ -1,20 +1,22 @@
 import { View, StyleSheet } from "react-native";
+import TopBar from "@/components/TopBar";
+import Navbar from "@/components/Navbar";
 
 export default function Home() {
   return (
     <View style={styles.container}>
-      <h1>Coucouuu</h1>
+      <TopBar />
+      <Navbar />
     </View>
   )
 }
 
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 20,
-    justifyContent: "center",
-  },
+container: {
+  flex: 1,
+  backgroundColor: "#f2f2f2",
+},
   h1: {
     color: 'red',
   }

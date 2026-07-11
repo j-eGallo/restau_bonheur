@@ -22,7 +22,8 @@ class TypeCuisineController extends AbstractController
     foreach ($typesCuisine as $typeCuisine) {
       $typesCuisineData[] = [
         'id' => $typeCuisine->getId(),
-        'nom' => $typeCuisine->getNom()
+        'nom' => $typeCuisine->getNom(),
+        'logo_url' => $typeCuisine->getLogoUrl()
       ];
     }
 
@@ -68,6 +69,7 @@ class TypeCuisineController extends AbstractController
       'types_cuisine' => $typesCuisineData
     ]);
   }
+
 
   #[Route('/api/restaurant/type-cuisine/add', name: 'add_type_cuisine_to_restaurant', methods: ['POST'])]
   public function addTypeCuisineToRestaurant(
