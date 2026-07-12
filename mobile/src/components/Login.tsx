@@ -18,6 +18,7 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
 
   // Valider Inscription
   const handleLogin = async () => {
+    const token = localStorage.getItem("client_token");
   try {
     
     
@@ -45,8 +46,9 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
 
     console.log("Client bien connecté :", data);
     router.replace("/home");
-
-    onSwitchToRegister();
+    
+    localStorage.setItem("client_token", data.token);
+  
   } catch (error) {
     console.log("Erreur fetch inscription :", error);
   }

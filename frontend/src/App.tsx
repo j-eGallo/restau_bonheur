@@ -484,31 +484,33 @@ return (
               <form onSubmit={handleLogin} className="auth-form">
                 <h1>Connexion restaurateur</h1>
 
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Email"
-                  value={loginData.email}
-                  onChange={handleLoginChange}
-                />
+            <input
+              data-cy="login-email"
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={loginData.email}
+              onChange={handleLoginChange}
+            />
 
-                <input
-                  type="password"
-                  name="password"
-                  placeholder="Mot de passe"
-                  value={loginData.password}
-                  onChange={handleLoginChange}
-                />
+            <input
+              data-cy="login-password"
+              type="password"
+              name="password"
+              placeholder="Mot de passe"
+              value={loginData.password}
+              onChange={handleLoginChange}
+            />
 
-                <button type="submit" disabled={loading}>
-                  {loading ? "Connexion..." : "Se connecter"}
-                </button>
+            <button data-cy="login-submit" type="submit" disabled={loading}>
+              {loading ? "Connexion..." : "Se connecter"}
+            </button>
 
-                <button type="button" onClick={switchToRegister}>
-                  Pas de compte ? Créer un compte
-                </button>
+            <button data-cy="go-register" type="button" onClick={switchToRegister}>
+              Pas de compte ? Créer un compte
+            </button>
 
-                {message && <p className="auth-message">{message}</p>}
+            {message && <p data-cy="auth-message" className="auth-message">{message}</p>}
               </form>
             )}
 
@@ -518,71 +520,79 @@ return (
 
                 {step === 1 && (
                   <>
-                    <input
-                      type="text"
-                      name="nom"
-                      placeholder="Nom"
-                      value={formData.nom}
-                      onChange={handleFormChange}
-                    />
+              <input
+                data-cy="register-nom"
+                type="text"
+                name="nom"
+                placeholder="Nom"
+                value={formData.nom}
+                onChange={handleFormChange}
+              />
 
-                    <input
-                      type="text"
-                      name="prenom"
-                      placeholder="Prénom"
-                      value={formData.prenom}
-                      onChange={handleFormChange}
-                    />
+              <input
+                data-cy="register-prenom"
+                type="text"
+                name="prenom"
+                placeholder="Prénom"
+                value={formData.prenom}
+                onChange={handleFormChange}
+              />
 
-                    <input
-                      type="email"
-                      name="email"
-                      placeholder="Email"
-                      value={formData.email}
-                      onChange={handleFormChange}
-                    />
+              <input
+                data-cy="register-email"
+                type="email"
+                name="email"
+                placeholder="Email"
+                value={formData.email}
+                onChange={handleFormChange}
+              />
 
-                    <input
-                      type="password"
-                      name="password"
-                      placeholder="Mot de passe"
-                      value={formData.password}
-                      onChange={handleFormChange}
-                    />
+              <input
+                data-cy="register-password"
+                type="password"
+                name="password"
+                placeholder="Mot de passe"
+                value={formData.password}
+                onChange={handleFormChange}
+              />
                   </>
                 )}
 
                 {step === 2 && (
                   <>
-                    <input
-                      type="text"
-                      name="restaurantNom"
-                      placeholder="Nom du restaurant"
-                      value={formData.restaurantNom}
-                      onChange={handleFormChange}
-                    />
+                <input
+                  data-cy="restaurant-nom"
+                  type="text"
+                  name="restaurantNom"
+                  placeholder="Nom du restaurant"
+                  value={formData.restaurantNom}
+                  onChange={handleFormChange}
+                />
 
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleLogoUpload}
-                    />
+                <input
+                  data-cy="restaurant-logo"
+                  type="file"
+                  accept="image/*"
+                  onChange={handleLogoUpload}
+                />
 
-                    <input
-                      type="text"
-                      name="restaurantTelephone"
-                      placeholder="Téléphone du restaurant"
-                      value={formData.restaurantTelephone}
-                      onChange={handleFormChange}
-                    />
+                <input
+                  data-cy="restaurant-telephone"
+                  type="text"
+                  name="restaurantTelephone"
+                  placeholder="Téléphone du restaurant"
+                  value={formData.restaurantTelephone}
+                  onChange={handleFormChange}
+                />
 
-                    <input
-                      type="number"
-                      name="personnesMax"
-                      placeholder="Nombre de personnes maximum"
-                      value={formData.personnesMax}
-                      onChange={handleFormChange}
-                    />
+                <input
+                  data-cy="restaurant-personnes-max"
+                  type="number"
+                  name="personnesMax"
+                  placeholder="Nombre de personnes maximum"
+                  value={formData.personnesMax}
+                  onChange={handleFormChange}
+                />
                   </>
                 )}
 
@@ -739,25 +749,27 @@ return (
 
                 <div className="auth-actions">
                   {step > 1 && (
-                    <button type="button" onClick={prevStep}>
+                    <button data-cy="register-prev" type="button" onClick={prevStep}>
                       Retour
                     </button>
                   )}
 
                   {step < 6 && (
-                    <button type="button" onClick={nextStep}>
+                    <button data-cy="register-next" type="button" onClick={nextStep}>
                       Suivant
                     </button>
                   )}
 
                   {step === 6 && (
                     <button
+                      data-cy="register-submit"
                       type="button"
                       onClick={handleRegister}
                       disabled={loading}
                     >
                       {loading ? "Inscription..." : "Créer le compte"}
                     </button>
+
                   )}
                 </div>
 
@@ -765,7 +777,7 @@ return (
                   Déjà un compte ? Se connecter
                 </button>
 
-                {message && <p className="auth-message">{message}</p>}
+                {message && <p className="auth-message" data-cy="auth-message">{message}</p>}
               </div>
             )}
           </div>

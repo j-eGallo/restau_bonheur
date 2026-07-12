@@ -41,7 +41,7 @@ const [profile, setProfile] = useState<Profile | null>(null);
 fetch("http://localhost:8000/api/restaurateur/me", {
   method: "GET",
   headers: {
-    Authorization: `Bearer ${token}`
+  Authorization: `Bearer ${token}`
   }
 })
   .then(async (res) => {
@@ -97,7 +97,7 @@ return (
         <div className="card">
           <Link to="/reservations" className="carte card-link">
             <img className="logos" src={imgCalendar} alt="" />
-            <h1>MON RESTAURANT</h1>
+            <h1>MES RÉSERVATIONS</h1>
           </Link>
 
           <Link to="/restaurant" className="carte card-link">
