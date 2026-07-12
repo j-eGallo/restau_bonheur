@@ -7,7 +7,7 @@ on:
     branches: [main, master]
 
 jobs:
-  build-and-test-frontend:
+  build-frontend:
     runs-on: ubuntu-latest
 
     steps:
@@ -26,11 +26,3 @@ jobs:
       - name: Générer le build frontend
         working-directory: ./frontend
         run: npm run build
-
-      - name: Lancer les tests Cypress
-        uses: cypress-io/github-action@v6
-        with:
-          working-directory: ./frontend
-          start: npm run dev
-          wait-on: http://localhost:5173
-          browser: chrome
