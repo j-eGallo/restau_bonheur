@@ -7,6 +7,8 @@ use App\Entity\Restaurant;
 use App\Enum\JourEnum;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\RestaurantRepository;
+use App\Repository\AvisRepository;
+use App\Repository\HoraireRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -14,110 +16,6 @@ use Symfony\Component\Routing\Annotation\Route;
 
 final class RestauController extends AbstractController
 {
-  // #[Route('/api/restaurant/create', name: 'create_restaurant', methods: ['POST'])]
-  // public function createRestaurant(
-  //   Request $request,
-  //   EntityManagerInterface $entityManager
-  // ): JsonResponse {
-
-  //   $data = json_decode($request->getContent(), true);
-
-  //   $restaurateur = $this->getUser();
-
-  //   if (!$restaurateur) {
-
-  //     return $this->json([
-  //       'error' => 'Utilisateur non connecté'
-  //     ], 401);
-  //   }
-
-  //   try {
-
-  //     $restaurant = new Restaurant();
-
-  //     $restaurant->setNom($data['nom']);
-  //     $restaurant->setNmRue($data['nm_rue']);
-  //     $restaurant->setRue($data['rue']);
-  //     $restaurant->setCodePostal($data['code_postal']);
-  //     $restaurant->setVille($data['ville']);
-  //     $restaurant->setLogoUrl($data['logo_url']);
-  //     $restaurant->setTelephone($data['telephone']);
-  //     $restaurant->setPersonnesMax($data['personnes_max']);
-
-  //     $restaurant->setRestaurateur($restaurateur);
-
-  //     $entityManager->persist($restaurant);
-
-  //     foreach ($data['horaires'] as $horaireData) {
-
-  //       $horaire = new Horaire();
-
-  //       $horaire->setJour(
-  //         JourEnum::from($horaireData['jour'])
-  //       );
-
-  //       $horaire->setOuvertMidi(
-  //         $horaireData['ouvert_midi']
-  //       );
-
-  //       $horaire->setOuvertSoir(
-  //         $horaireData['ouvert_soir']
-  //       );
-
-  //       $horaire->setRestaurant($restaurant);
-
-  //       if (isset($horaireData['heure_ouverture_midi'])) {
-
-  //         $horaire->setHeureOuvertureMidi(
-  //           new \DateTime(
-  //             $horaireData['heure_ouverture_midi']
-  //           )
-  //         );
-  //       }
-
-  //       if (isset($horaireData['heure_fermeture_midi'])) {
-
-  //         $horaire->setHeureFermetureMidi(
-  //           new \DateTime(
-  //             $horaireData['heure_fermeture_midi']
-  //           )
-  //         );
-  //       }
-
-  //       if (isset($horaireData['heure_ouverture_soir'])) {
-
-  //         $horaire->setHeureOuvertureSoir(
-  //           new \DateTime(
-  //             $horaireData['heure_ouverture_soir']
-  //           )
-  //         );
-  //       }
-
-  //       if (isset($horaireData['heure_fermeture_soir'])) {
-
-  //         $horaire->setHeureFermetureSoir(
-  //           new \DateTime(
-  //             $horaireData['heure_fermeture_soir']
-  //           )
-  //         );
-  //       }
-
-  //       $entityManager->persist($horaire);
-  //     }
-
-  //     $entityManager->flush();
-
-  //     return $this->json([
-  //       'message' => 'Restaurant créé avec succès'
-  //     ], 201);
-
-  //   } catch (\Exception $e) {
-
-  //     return $this->json([
-  //       'error' => $e->getMessage()
-  //     ], 500);
-  //   }
-  // }
 
 
 
@@ -249,4 +147,114 @@ final class RestauController extends AbstractController
       ]
     ]);
   }
+
+
+
+  #[Route('/api/restaurant/RestauPlusPop', name: 'restau_plus_pop', methods: ['GET'])]
+  public function getRestauByPop(
+    RestaurantRepository $restaurantRepository,
+    AvisRepository $avisRepository,
+    HoraireRepository $horaireRepository
+  ) {
+    $restaurants = $restaurantRepository->findAll();
+
+    $restaurantsData = [];
+
+    $jours = [
+      'Monday' => 'lundi',
+      'Tuesday' => 'mardi',
+      'Wednesday' => 'mercredi',
+      'Thursday' => 'jeudi',
+      'Friday' => 'vendredi',
+      'Saturday' => 'samedi',
+      'Sunday' => 'dimanche',
+    ];
+
+    $maintenant = new \DateTime();
+    $jourActuel = $jours[$maintenant->format('l')];
+    $heureActuelle = $maintenant->format('H:i:s');
+
+    foreach ($restaurants as $restaurant) {
+      $avis = $avisRepository->findBy([
+        'restaurant' => $restaurant
+      ]);
+
+      $nombreAvis = count($avis);
+      $total = 0;
+
+      foreach ($avis as $avi) {
+        $total = $total + $avi->getNote();
+      }
+
+      if ($nombreAvis > 0) {
+        $moyenne = $total / $nombreAvis;
+      } else {
+        $moyenne = 0;
+      }
+
+      $estOuvert = false;
+
+      $horaires = $horaireRepository->findBy([
+        'restaurant' => $restaurant
+      ]);
+
+      foreach ($horaires as $horaire) {
+        if ($horaire->getJour()->value === $jourActuel) {
+
+          if (
+            $horaire->isOuvertMidi() &&
+            $heureActuelle >= $horaire->getHeureOuvertureMidi()->format('H:i:s') &&
+            $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s')
+          ) {
+            $estOuvert = true;
+          }
+
+          if (
+            $horaire->isOuvertSoir() &&
+            $heureActuelle >= $horaire->getHeureOuvertureSoir()->format('H:i:s') &&
+            $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s')
+          ) {
+            $estOuvert = true;
+          }
+        }
+      }
+
+      $restaurantsData[] = [
+        'id' => $restaurant->getId(),
+        'nom' => $restaurant->getNom(),
+        'logo_url' => $restaurant->getLogoUrl(),
+        'telephone' => $restaurant->getTelephone(),
+        'nm_rue' => $restaurant->getNmRue(),
+        'rue' => $restaurant->getRue(),
+        'code_postal' => $restaurant->getCodePostal(),
+        'ville' => $restaurant->getVille(),
+
+        'type_cuisines' => array_map(function ($typeCuisine) {
+          return [
+            'id' => $typeCuisine->getId(),
+            'nom' => $typeCuisine->getNom(),
+            'logo_url' => $typeCuisine->getLogoUrl()
+          ];
+        }, $restaurant->getTypeCuisines()->toArray()),
+
+
+        'note_moyenne' => round($moyenne, 1),
+        'nombre_avis' => $nombreAvis,
+        'est_ouvert' => $estOuvert
+      ];
+    }
+
+    usort($restaurantsData, function ($a, $b) {
+      return $b['note_moyenne'] <=> $a['note_moyenne'];
+    });
+
+
+
+
+    return $this->json([
+      'restaurants' => $restaurantsData
+    ]);
+  }
 }
+
+

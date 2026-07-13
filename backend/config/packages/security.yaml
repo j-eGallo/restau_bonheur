@@ -71,6 +71,7 @@ security:
             jwt: ~
 
     access_control:
+        - { path: ^/api/restaurant/RestauPlusPop, roles: PUBLIC_ACCESS }
         - { path: ^/api/type-cuisine/get, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc, roles: PUBLIC_ACCESS }
         - { path: ^/api/doc.json, roles: PUBLIC_ACCESS }

@@ -3,6 +3,7 @@ import { View, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import TopBar from "@/components/TopBar";
 import Navbar from "@/components/Navbar";
+import PlusPopulaire from "@/components/PlusPopulaire";
 
 export default function Home() {
   
@@ -19,6 +20,7 @@ export default function Home() {
     <View style={styles.container}>
       <TopBar />
       <Navbar />
+      <PlusPopulaire />
     </View>
   )
 }
@@ -27,7 +29,7 @@ export default function Home() {
 const styles = StyleSheet.create({
 container: {
   flex: 1,
-  backgroundColor: "#f2f2f2",
+  backgroundColor: "#ffffff",
 },
   h1: {
     color: 'red',

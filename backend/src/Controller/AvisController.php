@@ -190,7 +190,7 @@ class AvisController extends AbstractController
 
 
 
-  #[Route('/api/avis/getAvis/{id}', methods: ['GET'])]
+  #[Route('/api/avis/getAvis/', methods: ['GET'])]
   public function getAvis(
     int $id,
     AvisRepository $avisRepository,
