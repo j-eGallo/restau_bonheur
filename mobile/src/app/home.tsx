@@ -4,6 +4,8 @@ import { router } from "expo-router";
 import TopBar from "@/components/TopBar";
 import Navbar from "@/components/Navbar";
 import PlusPopulaire from "@/components/PlusPopulaire";
+import PopType from "@/components/PopType";
+
 
 export default function Home() {
   
@@ -21,6 +23,7 @@ export default function Home() {
       <TopBar />
       <Navbar />
       <PlusPopulaire />
+      <PopType />
     </View>
   )
 }

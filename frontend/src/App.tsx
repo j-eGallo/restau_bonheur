@@ -45,16 +45,11 @@ const jours = [
 ];
 
 const cuisines = [
-  "Française",
-  "Italienne",
-  "Japonaise",
-  "Chinoise",
-  "Indienne",
-  "Mexicaine",
-  "Burger",
-  "Pizza",
-  "Méditerranéenne",
-  "Végétarienne",
+  "burger",
+  "chinois",
+  "italien",
+  "japonais",
+  "turc",
 ];
 
 function App() {

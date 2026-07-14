@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
-import { useLocalSearchParams, useGlobalSearchParams, Link } from 'expo-router';
+import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import TopBar from "@/components/TopBar";
-import PlusPopulaire from "@/components/PlusPopulaire";
 
 
 
