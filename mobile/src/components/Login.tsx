@@ -1,7 +1,7 @@
 import { View, TextInput, Image, StyleSheet, Pressable } from "react-native";
 import { useState } from "react";
 import AppText from "../components/AppText";
-import { router } from "expo-router"
+import { router } from "expo-router";
 
 
 // Props pour retourner sur Register si pas de compte
@@ -22,7 +22,7 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
   try {
     
     
-    
+    // Appel de la route API
     const response = await fetch("http://localhost:8000/api/loginClient", {
       method: "POST",
       headers: {

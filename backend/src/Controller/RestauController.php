@@ -18,6 +18,107 @@ final class RestauController extends AbstractController
 {
 
 
+  #[Route('/api/restaurant/get/{id}', name: 'get_restaurant_by_id', methods: ['GET'])]
+  public function getRestaurantById(
+    int $id,
+    RestaurantRepository $restaurantRepository,
+    AvisRepository $avisRepository,
+    HoraireRepository $horaireRepository
+  ) {
+    $restaurant = $restaurantRepository->find($id);
+
+    if (!$restaurant) {
+      return $this->json([
+        'error' => 'Restaurant introuvable'
+      ], 404);
+    }
+
+    $avis = $avisRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
+
+    $nombreAvis = count($avis);
+    $total = 0;
+
+    foreach ($avis as $avi) {
+      $total = $total + $avi->getNote();
+    }
+
+    if ($nombreAvis > 0) {
+      $moyenne = $total / $nombreAvis;
+    } else {
+      $moyenne = 0;
+    }
+
+    $jours = [
+      'Monday' => 'lundi',
+      'Tuesday' => 'mardi',
+      'Wednesday' => 'mercredi',
+      'Thursday' => 'jeudi',
+      'Friday' => 'vendredi',
+      'Saturday' => 'samedi',
+      'Sunday' => 'dimanche',
+    ];
+
+    $maintenant = new \DateTime();
+    $jourActuel = $jours[$maintenant->format('l')];
+    $heureActuelle = $maintenant->format('H:i:s');
+
+    $estOuvert = false;
+
+    $horaires = $horaireRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
+
+    foreach ($horaires as $horaire) {
+      if ($horaire->getJour()->value === $jourActuel) {
+        if (
+          $horaire->isOuvertMidi() &&
+          $horaire->getHeureOuvertureMidi() &&
+          $horaire->getHeureFermetureMidi() &&
+          $heureActuelle >= $horaire->getHeureOuvertureMidi()->format('H:i:s') &&
+          $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s')
+        ) {
+          $estOuvert = true;
+        }
+
+        if (
+          $horaire->isOuvertSoir() &&
+          $horaire->getHeureOuvertureSoir() &&
+          $horaire->getHeureFermetureSoir() &&
+          $heureActuelle >= $horaire->getHeureOuvertureSoir()->format('H:i:s') &&
+          $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s')
+        ) {
+          $estOuvert = true;
+        }
+      }
+    }
+
+    return $this->json([
+      'restaurant' => [
+        'id' => $restaurant->getId(),
+        'nom' => $restaurant->getNom(),
+        'logo_url' => $restaurant->getLogoUrl(),
+        'telephone' => $restaurant->getTelephone(),
+        'nm_rue' => $restaurant->getNmRue(),
+        'rue' => $restaurant->getRue(),
+        'code_postal' => $restaurant->getCodePostal(),
+        'ville' => $restaurant->getVille(),
+        'type_cuisines' => array_map(function ($typeCuisine) {
+          return [
+            'id' => $typeCuisine->getId(),
+            'nom' => $typeCuisine->getNom(),
+            'logo_url' => $typeCuisine->getLogoUrl()
+          ];
+        }, $restaurant->getTypeCuisines()->toArray()),
+        'note_moyenne' => round($moyenne, 1),
+        'nombre_avis' => $nombreAvis,
+        'est_ouvert' => $estOuvert
+      ]
+    ]);
+  }
+
+
 
   #[Route('/api/restaurant/update-places', methods: ['POST'])]
   public function updateRestaurantPlaces(

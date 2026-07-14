@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
+import { router } from "expo-router";
 
+// Props
 type TypeCuisine = {
   id: number;
   nom: string;
@@ -23,8 +25,10 @@ type Restaurant = {
 };
 
 export default function PlusPopulaire() {
+
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
+  // Appel de la route API
   useEffect(() => {
  
     const fetchRestaurantsPopulaires = async () => {
@@ -46,6 +50,8 @@ export default function PlusPopulaire() {
    }, [] );
 
 
+
+// Appel de l'image principale du restaurant
    const getImageUrl = (logoUrl: string) => {
   if (logoUrl.startsWith("http")) {
     return logoUrl;
@@ -58,6 +64,13 @@ export default function PlusPopulaire() {
   return `http://localhost:8000/images/restaurants/${logoUrl}`;
 };
 
+// Navigation vers le restaurant cliqué :
+const goToPage = (id: number) => {
+  router.push({
+    pathname: "/PageRestaurant",
+    params: { id },
+  });
+};
               
    
 
@@ -69,11 +82,13 @@ export default function PlusPopulaire() {
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
+
+
         {restaurants.map((restaurant) => (
           <Pressable
             key={restaurant.id}
             style={styles.card}
-            onPress={() => console.log("Type sélectionné :", restaurant.id)}
+            onPress={() => goToPage(restaurant.id)}
           >
 
             <Image
