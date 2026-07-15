@@ -1,5 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
+import AppText from "../components/AppText";
+
 
 type TypeCuisine = {
   id: number;
@@ -50,9 +52,9 @@ useEffect(() => {
               style={styles.logo}
             />
 
-            <Text style={styles.label}>
+            <AppText style={styles.label}>
               {typeCuisine.nom.charAt(0).toUpperCase() + typeCuisine.nom.slice(1)}
-            </Text>
+            </AppText>
           </Pressable>
         ))}
       </ScrollView>

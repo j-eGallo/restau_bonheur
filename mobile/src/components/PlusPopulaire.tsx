@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
+import AppText from "../components/AppText";
 import { router } from "expo-router";
 
 // Props
@@ -71,12 +72,15 @@ const goToPage = (id: number) => {
     params: { id },
   });
 };
+
+
+
               
    
 
    return (
     <View style={styles.page}>
-      <Text style={styles.titre}>LES PLUS POPULAIRES</Text>
+      <AppText style={styles.titre}>LES PLUS POPULAIRES</AppText>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
@@ -97,15 +101,15 @@ const goToPage = (id: number) => {
             />
 
             <View style={styles.top}>
-              <Text style={styles.label}>
+              <AppText style={styles.label}>
                 {restaurant.nom}
-              </Text>
-              <Text
+              </AppText>
+              <AppText
               style={[
                 restaurant.est_ouvert ? styles.ouvert : styles.ferme
               ]}
               >{restaurant.est_ouvert ? "OUVERT" : "FERMÉ"}
-              </Text>
+              </AppText>
             </View>
 
 
@@ -138,6 +142,14 @@ const goToPage = (id: number) => {
 }
 
 const styles = StyleSheet.create({
+
+  page: {
+  height: 450,
+  backgroundColor: "white",
+  marginTop: 55,
+  marginBottom: 80,
+  },
+
   top: {
   flexDirection: "row",
   justifyContent: "space-between",
@@ -189,12 +201,6 @@ const styles = StyleSheet.create({
 
   starInactive: {
     color: "#2D2D2D"
-  },
-
-  page: {
-    height: 450,
-    backgroundColor: "white",
-    marginTop: 55
   },
 
     scrollContent: {

@@ -100,26 +100,44 @@ return (
           ),
         );
 
-        return (
-          <View key={typeCuisine.id} style={styles.card}>
-            <Text>
-              {typeCuisine.nom.toUpperCase()}
-            </Text>
+        if (!restaurantDuType) {
+          return null;
+        }
 
-            {restaurantDuType && (
-              <View>
-                <Image
-                  source={{ uri: getImageUrl(restaurantDuType.logo_url) }}
-                  style={styles.logo}
-                />
+return (
+  <Pressable
+    key={typeCuisine.id}
+    style={styles.card}
+    onPress={() => goToPage(restaurantDuType.id)}
+  >
+    <Image
+      source={{ uri: getImageUrl(restaurantDuType.logo_url) }}
+      style={styles.logo}
+    />
 
-                <Text>
-                  {restaurantDuType.nom}
-                </Text>
-              </View>
-            )}
-          </View>
-        );
+    <View style={styles.overlay}>
+      <Text style={styles.nomRestaurant}>
+        {restaurantDuType.nom}
+      </Text>
+
+      <View style={styles.stars}>
+        {[1, 2, 3, 4, 5].map((star) => (
+          <Text
+            key={star}
+            style={[
+              styles.star,
+              star <= Math.round(restaurantDuType.note_moyenne)
+                ? styles.starActive
+                : styles.starInactive
+            ]}
+          >
+            ★
+          </Text>
+        ))}
+      </View>
+    </View>
+  </Pressable>
+);
       })}
     </ScrollView>
   </View>
@@ -130,7 +148,7 @@ return (
 
 const styles = StyleSheet.create({
   general: {
-    
+    marginBottom: 80,
   },
 
   scrollContent: {
@@ -139,11 +157,50 @@ const styles = StyleSheet.create({
 },
 
 card: {
-  width: 300,
+  width: 250,
+  height: 250,
+  position: "relative",
+  overflow: "hidden",
 },
-  logo: {
-    width: 300,
-    height: 200,
-    resizeMode: "cover",
-  }
+
+logo: {
+  width: "100%",
+  height: "100%",
+  resizeMode: "cover",
+},
+
+overlay: {
+  position: "absolute",
+  left: 0,
+  right: 0,
+  bottom: 0,
+  backgroundColor: "rgba(45, 45, 45, 0.8)",
+  paddingHorizontal: 12,
+  paddingVertical: 12,
+},
+
+nomRestaurant: {
+  color: "white",
+  fontSize: 20,
+  fontWeight: 700,
+},
+
+stars: {
+  flexDirection: "row",
+  alignItems: "center",
+  marginTop: 4,
+},
+
+star: {
+  fontSize: 24,
+  marginRight: 2,
+},
+
+starActive: {
+  color: "#ec5b15",
+},
+
+starInactive: {
+  color: "white",
+},
 })

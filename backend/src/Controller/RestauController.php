@@ -17,6 +17,29 @@ use Symfony\Component\Routing\Annotation\Route;
 final class RestauController extends AbstractController
 {
 
+  #[Route('/api/restaurant/latest', name: 'get_latest_restaurants', methods: ['GET'])]
+  public function getLatestsRestau(
+    RestaurantRepository $restaurantRepository
+  ) {
+    $restaurants = $restaurantRepository->findBy([], ['id' => 'DESC'], 6);
+
+    $restaurantsData = [];
+
+    foreach ($restaurants as $restaurant) {
+      $restaurantsData[] = [
+        'id' => $restaurant->getId(),
+        'nom' => $restaurant->getNom(),
+        'logo_url' => $restaurant->getLogoUrl(),
+        'telephone' => $restaurant->getTelephone(),
+        'ville' => $restaurant->getVille(),
+      ];
+    }
+
+    return $this->json([
+      'restaurants' => $restaurantsData
+    ]);
+  }
+
 
   #[Route('/api/restaurant/get/{id}', name: 'get_restaurant_by_id', methods: ['GET'])]
   public function getRestaurantById(
