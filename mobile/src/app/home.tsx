@@ -6,6 +6,7 @@ import Navbar from "@/components/Navbar";
 import PlusPopulaire from "@/components/PlusPopulaire";
 import PopType from "@/components/PopType";
 import NouveauRes from "@/components/NouveauRes";
+import PopParType from "@/components/PopParType";
 
 export default function Home() {
   
@@ -26,6 +27,7 @@ export default function Home() {
       <PopType />
       {/* <ResAgain /> */}
       <NouveauRes />
+      <PopParType />
     </View>
   )
 }

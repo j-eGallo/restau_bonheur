@@ -1,6 +1,8 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
 import { router } from "expo-router";
+import AppText from "../components/AppText";
+
 
 // Props
 type TypeCuisine = {
@@ -24,11 +26,12 @@ type Restaurant = {
   type_cuisines: TypeCuisine[];
 };
 
-export default function PopType() {
+export default function PopParType() {
 
-    const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
-    const [typesCuisine, setTypesCuisine] = useState<TypeCuisine[]>([]);
-  
+      const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
+      const [typesCuisine, setTypesCuisine] = useState<TypeCuisine[]>([]);
+    
+
     // Appel de la route API
     useEffect(() => {
    
@@ -65,7 +68,7 @@ export default function PopType() {
      }, [] );
 
 
-    // Appel de l'image principale du restaurant
+  // Appel de l'image principale du restaurant
    const getImageUrl = (logoUrl: string) => {
   if (logoUrl.startsWith("http")) {
     return logoUrl;
@@ -78,114 +81,100 @@ export default function PopType() {
   return `http://localhost:8000/images/restaurants/${logoUrl}`;
 };
 
-// Navigation vers le restaurant cliqué :
-const goToPage = (id: number) => {
-  router.push({
-    pathname: "/PageRestaurant",
-    params: { id },
-  });
-};
+     return(
+      <View
+       style={styles.general}>
+        
+        {typesCuisine.map((typeCuisine) => {
+          const restaurantsDuType = restaurants.filter((restaurant) =>
+          restaurant.type_cuisines.some(
+            (type) => type.id === typeCuisine.id,
 
+          ),
+          
+        );
 
-return (
-  <View style={styles.general}>
+        if (!restaurantsDuType) {
+          return null;
+        }
+                   
+  return (
+      <View key={typeCuisine.id}>
+    <AppText style={styles.titre}>
+      LES MEILLEURS RESTAU {typeCuisine.nom.toUpperCase()}
+    </AppText>
     <ScrollView
       horizontal
       showsHorizontalScrollIndicator={false}
-      contentContainerStyle={styles.scrollContent}
-    >
-      {typesCuisine.map((typeCuisine) => {
-        const restaurantDuType = restaurants.find((restaurant) =>
-          restaurant.type_cuisines.some(
-            (type) => type.id === typeCuisine.id,
-          ),
-        );
-
-        if (!restaurantDuType) {
-          return null;
-        }
-
-return (
-  <Pressable
-    key={typeCuisine.id}
-    style={styles.card}
-    onPress={() => goToPage(restaurantDuType.id)}
-  >
-    <Image
-      source={{ uri: getImageUrl(restaurantDuType.logo_url) }}
-      style={styles.logo}
-    />
-
-    <View style={styles.overlay}>
-      <Text style={styles.nomRestaurant}>
-        {restaurantDuType.nom}
-      </Text>
-
-      <View style={styles.stars}>
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Text
-            key={star}
-            style={[
-              styles.star,
-              star <= Math.round(restaurantDuType.note_moyenne)
-                ? styles.starActive
-                : styles.starInactive
-            ]}
-          >
-            ★
+      contentContainerStyle={styles.scrollContent} 
+    key={typeCuisine.id}>
+      {restaurantsDuType.map((restaurant) => {
+        return (
+          <View key={restaurant.id} style={styles.bande}>
+                <Image
+                  source={{ uri: getImageUrl(restaurant.logo_url) }}
+                  style={styles.logo}
+                />
+            <AppText style={styles.nom}>{restaurant.nom}</AppText>
+            <View style={styles.stars}>
+              {[1, 2, 3, 4, 5].map((star) => (
+                <Text
+                  key={star}
+                  style={[
+                    styles.star,
+                    star <= Math.round(restaurant.note_moyenne)
+                      ? styles.starActive
+                      : styles.starInactive
+                  ]}
+                >
+                  ★
           </Text>
         ))}
       </View>
-    </View>
-  </Pressable>
-);
+          </View>
+        );
       })}
+      
+
     </ScrollView>
-  </View>
-);
-
-
+    </View>
+  );
+})}
+      </View>
+     )
 }
 
 const styles = StyleSheet.create({
   general: {
-    marginBottom: 80,
+    height: 800
   },
 
+  bande: {
+    marginBottom : 40
+  },
+
+  titre : {
+    color: "#ec5b15",
+    marginBottom: 20,
+    textAlign: "center",
+    fontSize: 20,
+    fontWeight: 900
+  },
+  
   scrollContent: {
   gap: 18,
   paddingHorizontal: 12,
 },
 
-card: {
-  width: 250,
-  height: 250,
-  position: "relative",
-  overflow: "hidden",
+logo : {
+  height: 200,
+  width: 200
 },
 
-logo: {
-  width: "100%",
-  height: "100%",
-  resizeMode: "cover",
-},
-
-overlay: {
-  position: "absolute",
-  left: 0,
-  right: 0,
-  bottom: 0,
-  backgroundColor: "rgba(45, 45, 45, 0.8)",
-  paddingHorizontal: 12,
-  paddingVertical: 12,
-},
-
-nomRestaurant: {
-  color: "white",
+nom : {
   fontSize: 20,
-  fontWeight: 700,
+  fontWeight: 900
 },
-
 stars: {
   flexDirection: "row",
   alignItems: "center",
