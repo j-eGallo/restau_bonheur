@@ -481,4 +481,17 @@ final class ReservationController extends AbstractController
       ], 500);
     }
   }
+
+
+
+  /*
+  1) Récupérer repository des restaurants et des clients
+   */
+
+  #[Route('/api/reservation/SixLastRes', methods: ['POST'])]
+  public function sixLastRes()
+  {
+
+  }
+
 }
