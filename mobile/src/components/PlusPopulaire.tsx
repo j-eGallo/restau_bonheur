@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
 import AppText from "../components/AppText";
 import { router } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 // Props
 type TypeCuisine = {
@@ -29,24 +31,42 @@ export default function PlusPopulaire() {
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
 
+
+  // Si je ne suis pas connecté, je serai automatiquement redirigé vers Auth
+useEffect(() => {
+  const checkToken = async () => {
+    const token = await AsyncStorage.getItem("client_token");
+
+    if (!token) {
+      router.replace("/auth");
+    }
+  };
+
+  checkToken();
+}, []);
+
+
   // Appel de la route API
   useEffect(() => {
  
-    const fetchRestaurantsPopulaires = async () => {
-    try {
-    const response = await fetch("http://localhost:8000/api/restaurant/RestauPlusPop");
+const fetchRestaurantsPopulaires = async () => {
+  try {
+    const token = await AsyncStorage.getItem("client_token");
+
+    const response = await fetch("http://localhost:8000/api/restaurant/RestauPlusPop", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
     const data = await response.json();
 
     console.log("RESTAURANTS POPULAIRES :", data);
     setRestaurants(data.restaurants ?? []);
-
-   }
-
-
-  catch(error) {
-        console.log("Erreur fetch types cuisine :", error);
+  } catch (error) {
+    console.log("Erreur fetch types cuisine :", error);
   }
-    }
+};
       fetchRestaurantsPopulaires();
    }, [] );
 

@@ -16,11 +16,15 @@ const styles = StyleSheet.create({
     height: 63,
     width: "100%",
     backgroundColor: "#ec5b15",
+    position: "absolute",
     top: 0,
     left: 0,
+    right: 0,
     alignItems: "center",
-    justifyContent: "center"
+    justifyContent: "center",
+    zIndex: 1000,
   },
+
   logo: {
     height: 39,
     width: 135,

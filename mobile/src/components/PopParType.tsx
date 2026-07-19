@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
+import { View, ScrollView, Image, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import AppText from "../components/AppText";
 
@@ -191,6 +191,6 @@ starActive: {
 },
 
 starInactive: {
-  color: "white",
+  color: "#2D2D2D",
 },
 })

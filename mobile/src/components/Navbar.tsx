@@ -34,6 +34,17 @@ useEffect(() => {
    }, [] );
 
 
+   const getImageUrl = (logoUrl: string) => {
+  if (logoUrl.startsWith("http://localhost:8000")) {
+    return logoUrl.replace("http://localhost:8000", "http://localhost:8000");
+  }
+
+  if (logoUrl.startsWith("/")) {
+    return `http://localhost:8000${logoUrl}`;
+  }
+
+  return logoUrl;
+};
  return (
     <View style={styles.navbar}>
       <ScrollView
@@ -48,7 +59,7 @@ useEffect(() => {
             onPress={() => console.log("Type sélectionné :", typeCuisine.id)}
           >
             <Image
-              source={{ uri: typeCuisine.logo_url }}
+              source={{ uri: getImageUrl(typeCuisine.logo_url) }}       
               style={styles.logo}
             />
 
@@ -69,7 +80,12 @@ const styles = StyleSheet.create({
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
-    justifyContent: "center"
+    justifyContent: "center",
+    position: "absolute",
+    top: 63,
+    left: 0,
+    right: 0,
+    zIndex: 999,
   },
 
   scrollContent: {

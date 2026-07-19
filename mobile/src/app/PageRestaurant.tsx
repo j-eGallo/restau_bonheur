@@ -3,6 +3,8 @@ import { useLocalSearchParams } from 'expo-router';
 import { View, Text, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import TopBar from "@/components/TopBar";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
 
 
 
@@ -26,12 +28,16 @@ type Restaurant = {
 export default function PageRestaurant() {
   
   // Si je ne suis pas connecté, je serai automatiquement redirigé vers Auth
-  useEffect(() => {
-  const token = localStorage.getItem("client_token");
+useEffect(() => {
+  const checkToken = async () => {
+    const token = await AsyncStorage.getItem("client_token");
 
-  if (!token) {
-    router.replace("/auth");
-  }
+    if (!token) {
+      router.replace("/auth");
+    }
+  };
+
+  checkToken();
 }, []);
 
   // Récupération de l'ID du restaurant:

@@ -484,14 +484,68 @@ final class ReservationController extends AbstractController
 
 
 
-  /*
-  1) Récupérer repository des restaurants et des clients
-   */
 
-  #[Route('/api/reservation/SixLastRes', methods: ['POST'])]
-  public function sixLastRes()
-  {
+  #[Route('/api/reservation/sixLastRes', methods: ['GET'])]
+  public function threeLastRes(
+    Request $request,
+    ReservationRepository $reservationRepository,
+  ) {
 
+
+
+    // Trouver le client
+    $client = $this->getUser();
+
+    if (!$client) {
+
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+
+
+    // Réservations du clients
+    $reservations = $reservationRepository->findBy(
+      [
+        'client' => $client
+      ],
+      [
+        'date' => 'DESC',
+        'heure' => 'DESC'
+      ],
+      3
+    );
+
+    $reservationsData = [];
+
+
+    foreach ($reservations as $reservation) {
+
+
+      $restaurant = $reservation->getRestaurant();
+
+      $reservationsData[] = [
+        'id' => $reservation->getId(),
+        'date' => $reservation->getDate()->format('Y-m-d'),
+        'heure' => $reservation->getHeure()->format('H:i'),
+        'service' => $reservation->getService()->value,
+        'nb_personnes' => $reservation->getNbPersonnes(),
+
+        'restaurant' => [
+          'id' => $restaurant->getId(),
+          'nom' => $restaurant->getNom(),
+          'logo_url' => $restaurant->getLogoUrl(),
+          'telephone' => $restaurant->getTelephone(),
+          'nm_rue' => $restaurant->getNmRue(),
+          'rue' => $restaurant->getRue(),
+          'code_postal' => $restaurant->getCodePostal(),
+          'ville' => $restaurant->getVille()
+        ]
+      ];
+    }
+    return $this->json([
+      'reservations' => $reservationsData
+    ]);
   }
-
 }
