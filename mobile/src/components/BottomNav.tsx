@@ -1,9 +1,47 @@
 import { View, Image, Pressable, StyleSheet, TextInput } from "react-native";
+import { router } from "expo-router";
+import { useState } from "react";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function BottomNav() {
+
+  const [search, setSearch] = useState("");
+
+  const goSearch = () => {
+  if (search.trim() === "") {
+    return;
+  }
+
+  router.push({
+    pathname: "/SearchRestaurants",
+    params: { q: search },
+  });
+};
+
+  const goMesReservations = () => {
+  router.push({
+    pathname: "/MesReservations",
+    });
+  };
+
+
+const goMesParametres = async () => {
+  const token = await AsyncStorage.getItem("client_token");
+
+  if (!token) {
+    router.push("/auth");
+    return;
+  }
+
+  router.push("/Parametres");
+};
+
   return (
     <View style={styles.bottomnav}>
-      <Pressable style={styles.iconButton}>
+      <Pressable 
+      onPress={() => router.replace("/home")}
+      style={styles.iconButton}
+      >
         <Image
           source={require("../../assets/images/homeicon.png")}
           style={styles.icon}
@@ -11,30 +49,38 @@ export default function BottomNav() {
       </Pressable>
 
       <View style={styles.searchBar}>
+        <Pressable onPress={goSearch}>
         <Image
           source={require("../../assets/images/searchicon.png")}
           style={styles.searchIcon}
         />
+        </Pressable>
 
         <TextInput
           placeholder="Rechercher ..."
           placeholderTextColor="#555"
+          value={search}
+          onChangeText={setSearch}
+          onSubmitEditing={goSearch}
           style={[
             styles.searchInput,
             { outlineStyle: "none" } as any
-          ]}          
+          ]}
         />
       </View>
 
       <View style={styles.rightpart}>
-        <Pressable style={styles.iconButton}>
+        <Pressable style={styles.iconButton} onPress={() => goMesReservations()}>
           <Image
             source={require("../../assets/images/calendaricon.png")}
             style={styles.icon}
           />
         </Pressable>
 
-        <Pressable style={styles.iconButton}>
+        <Pressable 
+        onPress={() => goMesParametres()}
+        style={styles.iconButton}
+        >
           <Image
             source={require("../../assets/images/usericon.png")}
             style={styles.icon}

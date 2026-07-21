@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
 import AppText from "../components/AppText";
-
+import { router } from "expo-router";
 
 type TypeCuisine = {
   id: number;
@@ -45,6 +45,16 @@ useEffect(() => {
 
   return logoUrl;
 };
+
+
+const goToTypePage = (id: number) => {
+  router.push({
+    pathname: "/RestauParType",
+    params: { id },
+  });
+};
+
+
  return (
     <View style={styles.navbar}>
       <ScrollView
@@ -56,8 +66,8 @@ useEffect(() => {
           <Pressable
             key={typeCuisine.id}
             style={styles.item}
-            onPress={() => console.log("Type sélectionné :", typeCuisine.id)}
-          >
+            onPress={() => goToTypePage(typeCuisine.id)}
+            >
             <Image
               source={{ uri: getImageUrl(typeCuisine.logo_url) }}       
               style={styles.logo}

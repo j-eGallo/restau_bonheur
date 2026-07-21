@@ -48,6 +48,7 @@ type Reservation = {
 export default function ResAgain() {
 
   const [reservations, setReservations] = useState<Reservation[]>([])
+  const [loading, setLoading] = useState(true);
 
     // Appel de la route API
 useEffect(() => {
@@ -56,7 +57,8 @@ useEffect(() => {
       const token = await AsyncStorage.getItem("client_token");
 
       if (!token) {
-        router.replace("/auth");
+        setReservations([]);
+        setLoading(false);
         return;
       }
 
@@ -72,11 +74,15 @@ useEffect(() => {
       setReservations(data.reservations ?? []);
     } catch (error) {
       console.log("Erreur fetch réservations :", error);
+      setReservations([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   fetchRestaurantsPopulaires();
 }, []);
+
 
 
    // Appel de l'image principale du restaurant
@@ -99,6 +105,14 @@ const goToPage = (id: number) => {
     params: { id },
   });
 };
+
+if (loading) {
+  return null;
+}
+
+if (reservations.length === 0) {
+  return null;
+}
 
   return (
     <View style={styles.general}>

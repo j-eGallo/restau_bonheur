@@ -9,6 +9,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Repository\RestaurantRepository;
 use App\Repository\AvisRepository;
 use App\Repository\HoraireRepository;
+use App\Repository\PhotoRepository;
+use App\Repository\PlatRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -17,36 +19,14 @@ use Symfony\Component\Routing\Annotation\Route;
 final class RestauController extends AbstractController
 {
 
-  #[Route('/api/restaurant/latest', name: 'get_latest_restaurants', methods: ['GET'])]
-  public function getLatestsRestau(
-    RestaurantRepository $restaurantRepository
-  ) {
-    $restaurants = $restaurantRepository->findBy([], ['id' => 'DESC'], 6);
-
-    $restaurantsData = [];
-
-    foreach ($restaurants as $restaurant) {
-      $restaurantsData[] = [
-        'id' => $restaurant->getId(),
-        'nom' => $restaurant->getNom(),
-        'logo_url' => $restaurant->getLogoUrl(),
-        'telephone' => $restaurant->getTelephone(),
-        'ville' => $restaurant->getVille(),
-      ];
-    }
-
-    return $this->json([
-      'restaurants' => $restaurantsData
-    ]);
-  }
-
-
   #[Route('/api/restaurant/get/{id}', name: 'get_restaurant_by_id', methods: ['GET'])]
   public function getRestaurantById(
     int $id,
     RestaurantRepository $restaurantRepository,
     AvisRepository $avisRepository,
-    HoraireRepository $horaireRepository
+    HoraireRepository $horaireRepository,
+    PhotoRepository $photoRepository,
+    PlatRepository $platRepository
   ) {
     $restaurant = $restaurantRepository->find($id);
 
@@ -56,6 +36,7 @@ final class RestauController extends AbstractController
       ], 404);
     }
 
+    // Avis + moyenne
     $avis = $avisRepository->findBy([
       'restaurant' => $restaurant
     ]);
@@ -64,7 +45,7 @@ final class RestauController extends AbstractController
     $total = 0;
 
     foreach ($avis as $avi) {
-      $total = $total + $avi->getNote();
+      $total += $avi->getNote();
     }
 
     if ($nombreAvis > 0) {
@@ -73,6 +54,7 @@ final class RestauController extends AbstractController
       $moyenne = 0;
     }
 
+    // Jour + heure actuelle en France
     $jours = [
       'Monday' => 'lundi',
       'Tuesday' => 'mardi',
@@ -83,10 +65,13 @@ final class RestauController extends AbstractController
       'Sunday' => 'dimanche',
     ];
 
-    $maintenant = new \DateTime();
+    $timezone = new \DateTimeZone('Europe/Paris');
+    $maintenant = new \DateTime('now', $timezone);
+
     $jourActuel = $jours[$maintenant->format('l')];
     $heureActuelle = $maintenant->format('H:i:s');
 
+    // Calcul ouvert / fermé
     $estOuvert = false;
 
     $horaires = $horaireRepository->findBy([
@@ -95,27 +80,34 @@ final class RestauController extends AbstractController
 
     foreach ($horaires as $horaire) {
       if ($horaire->getJour()->value === $jourActuel) {
-        if (
+        $ouvertMidi =
           $horaire->isOuvertMidi() &&
           $horaire->getHeureOuvertureMidi() &&
           $horaire->getHeureFermetureMidi() &&
           $heureActuelle >= $horaire->getHeureOuvertureMidi()->format('H:i:s') &&
-          $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s')
-        ) {
-          $estOuvert = true;
-        }
+          $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s');
 
-        if (
+        $ouvertSoir =
           $horaire->isOuvertSoir() &&
           $horaire->getHeureOuvertureSoir() &&
           $horaire->getHeureFermetureSoir() &&
           $heureActuelle >= $horaire->getHeureOuvertureSoir()->format('H:i:s') &&
-          $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s')
-        ) {
+          $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s');
+
+        if ($ouvertMidi || $ouvertSoir) {
           $estOuvert = true;
         }
       }
     }
+
+    // Photos du restaurant
+    $photos = $photoRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
+
+    $plats = $platRepository->findBy([
+      'restaurant' => $restaurant
+    ]);
 
     return $this->json([
       'restaurant' => [
@@ -127,6 +119,7 @@ final class RestauController extends AbstractController
         'rue' => $restaurant->getRue(),
         'code_postal' => $restaurant->getCodePostal(),
         'ville' => $restaurant->getVille(),
+
         'type_cuisines' => array_map(function ($typeCuisine) {
           return [
             'id' => $typeCuisine->getId(),
@@ -134,13 +127,30 @@ final class RestauController extends AbstractController
             'logo_url' => $typeCuisine->getLogoUrl()
           ];
         }, $restaurant->getTypeCuisines()->toArray()),
+
+        'photos' => array_map(function ($photo) {
+          return [
+            'id' => $photo->getId(),
+            'url' => $photo->getUrl()
+          ];
+        }, $photos),
+
+        'plats' => array_map(function ($plat) {
+          return [
+            'id' => $plat->getId(),
+            'nom' => $plat->getNom(),
+            'prix' => $plat->getPrix(),
+            'image_url' => $plat->getImageUrl(),
+            'categorie' => $plat->getCategorie() ? $plat->getCategorie()->getNom() : null,
+          ];
+        }, $plats),
+
         'note_moyenne' => round($moyenne, 1),
         'nombre_avis' => $nombreAvis,
-        'est_ouvert' => $estOuvert
+        'est_ouvert' => $estOuvert,
       ]
     ]);
   }
-
 
 
   #[Route('/api/restaurant/update-places', methods: ['POST'])]
@@ -294,7 +304,9 @@ final class RestauController extends AbstractController
       'Sunday' => 'dimanche',
     ];
 
-    $maintenant = new \DateTime();
+    $timezone = new \DateTimeZone('Europe/Paris');
+    $maintenant = new \DateTime('now', $timezone);
+
     $jourActuel = $jours[$maintenant->format('l')];
     $heureActuelle = $maintenant->format('H:i:s');
 
@@ -307,7 +319,7 @@ final class RestauController extends AbstractController
       $total = 0;
 
       foreach ($avis as $avi) {
-        $total = $total + $avi->getNote();
+        $total += $avi->getNote();
       }
 
       if ($nombreAvis > 0) {
@@ -325,19 +337,21 @@ final class RestauController extends AbstractController
       foreach ($horaires as $horaire) {
         if ($horaire->getJour()->value === $jourActuel) {
 
-          if (
+          $ouvertMidi =
             $horaire->isOuvertMidi() &&
+            $horaire->getHeureOuvertureMidi() &&
+            $horaire->getHeureFermetureMidi() &&
             $heureActuelle >= $horaire->getHeureOuvertureMidi()->format('H:i:s') &&
-            $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s')
-          ) {
-            $estOuvert = true;
-          }
+            $heureActuelle <= $horaire->getHeureFermetureMidi()->format('H:i:s');
 
-          if (
+          $ouvertSoir =
             $horaire->isOuvertSoir() &&
+            $horaire->getHeureOuvertureSoir() &&
+            $horaire->getHeureFermetureSoir() &&
             $heureActuelle >= $horaire->getHeureOuvertureSoir()->format('H:i:s') &&
-            $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s')
-          ) {
+            $heureActuelle <= $horaire->getHeureFermetureSoir()->format('H:i:s');
+
+          if ($ouvertMidi || $ouvertSoir) {
             $estOuvert = true;
           }
         }
@@ -361,19 +375,19 @@ final class RestauController extends AbstractController
           ];
         }, $restaurant->getTypeCuisines()->toArray()),
 
-
         'note_moyenne' => round($moyenne, 1),
         'nombre_avis' => $nombreAvis,
-        'est_ouvert' => $estOuvert
+        'est_ouvert' => $estOuvert,
+
+        // DEBUG temporaire
+        'heure_actuelle_debug' => $heureActuelle,
+        'jour_actuel_debug' => $jourActuel,
       ];
     }
 
     usort($restaurantsData, function ($a, $b) {
       return $b['note_moyenne'] <=> $a['note_moyenne'];
     });
-
-
-
 
     return $this->json([
       'restaurants' => $restaurantsData

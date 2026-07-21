@@ -1,11 +1,11 @@
-import { Redirect } from "expo-router";
+import { useEffect } from "react";
+import { router } from "expo-router";
+import { View } from "react-native";
 
 export default function Index() {
-  const isLoggedIn = false;
+  useEffect(() => {
+    router.replace("/home");
+  }, []);
 
-  if (!isLoggedIn) {
-    return <Redirect href="/auth" />;
-  }
-
-  return <Redirect href="/home" />;
+  return <View />;
 }
