@@ -100,6 +100,7 @@ final class RestauController extends AbstractController
       }
     }
 
+
     // Photos du restaurant
     $photos = $photoRepository->findBy([
       'restaurant' => $restaurant
@@ -119,6 +120,28 @@ final class RestauController extends AbstractController
         'rue' => $restaurant->getRue(),
         'code_postal' => $restaurant->getCodePostal(),
         'ville' => $restaurant->getVille(),
+        'horaires' => array_map(function ($horaire) {
+          return [
+            'id' => $horaire->getId(),
+            'jour' => $horaire->getJour()->value,
+
+            'ouvert_midi' => $horaire->isOuvertMidi(),
+            'heure_ouverture_midi' => $horaire->getHeureOuvertureMidi()
+              ? $horaire->getHeureOuvertureMidi()->format('H:i')
+              : null,
+            'heure_fermeture_midi' => $horaire->getHeureFermetureMidi()
+              ? $horaire->getHeureFermetureMidi()->format('H:i')
+              : null,
+
+            'ouvert_soir' => $horaire->isOuvertSoir(),
+            'heure_ouverture_soir' => $horaire->getHeureOuvertureSoir()
+              ? $horaire->getHeureOuvertureSoir()->format('H:i')
+              : null,
+            'heure_fermeture_soir' => $horaire->getHeureFermetureSoir()
+              ? $horaire->getHeureFermetureSoir()->format('H:i')
+              : null,
+          ];
+        }, $horaires),
 
         'type_cuisines' => array_map(function ($typeCuisine) {
           return [

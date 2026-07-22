@@ -13,6 +13,7 @@ type Profile = {
     nom: string;
     prenom: string;
   };
+  
   restaurant: {
     nom: string;
     nm_rue: number;
