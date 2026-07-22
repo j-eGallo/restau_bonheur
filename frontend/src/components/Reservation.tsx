@@ -236,9 +236,9 @@ export default function Reservation() {
                   </div>
 
                   <div className="reservation-calendar-grid">
-                    {getCalendarDays(calendarMonth).map((day) => {
+                    {getCalendarDays(calendarMonth).map((day, index) => {
                       if (!day) {
-                        return <div key={crypto.randomUUID()} />;
+                        return <div key={`empty-${index}`} />;
                       }
 
                       const hasReservation = datesWithReservations.includes(day.date);
@@ -332,14 +332,16 @@ export default function Reservation() {
 function getTodayDate() {
   const today = new Date();
 
-  return today.toISOString().slice(0, 10);
+  return formatDateToInputValue(today);
 }
 
 function changeDateByDays(dateString: string, days: number) {
-  const date = new Date(dateString);
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
   date.setDate(date.getDate() + days);
 
-  return date.toISOString().slice(0, 10);
+  return formatDateToInputValue(date);
 }
 
 function getMonthValue(dateString: string) {
@@ -347,20 +349,26 @@ function getMonthValue(dateString: string) {
 }
 
 function changeMonthValue(monthValue: string, months: number) {
-  const date = new Date(`${monthValue}-01`);
+  const [year, month] = monthValue.split("-").map(Number);
+
+  const date = new Date(year, month - 1, 1);
   date.setMonth(date.getMonth() + months);
 
-  return date.toISOString().slice(0, 7);
+  return formatDateToInputValue(date).slice(0, 7);
 }
 
 function formatDateFr(dateString: string) {
-  const date = new Date(dateString);
+  const [year, month, day] = dateString.split("-").map(Number);
+
+  const date = new Date(year, month - 1, day);
 
   return date.toLocaleDateString("fr-FR");
 }
 
 function formatMonthLabel(monthValue: string) {
-  const date = new Date(`${monthValue}-01`);
+  const [year, month] = monthValue.split("-").map(Number);
+
+  const date = new Date(year, month - 1, 1);
 
   return date.toLocaleDateString("fr-FR", {
     month: "long",
@@ -383,11 +391,10 @@ function formatService(service: string) {
 }
 
 function getCalendarDays(monthValue: string) {
-  const firstDayOfMonth = new Date(`${monthValue}-01`);
-  const year = firstDayOfMonth.getFullYear();
-  const month = firstDayOfMonth.getMonth();
+  const [year, month] = monthValue.split("-").map(Number);
 
-  const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const firstDayOfMonth = new Date(year, month - 1, 1);
+  const daysInMonth = new Date(year, month, 0).getDate();
   const firstDayIndex = convertJsDayToMondayFirst(firstDayOfMonth.getDay());
 
   const days: Array<null | { date: string; dayNumber: number }> = [];
@@ -397,8 +404,8 @@ function getCalendarDays(monthValue: string) {
   }
 
   for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month, day);
-    const dateString = date.toISOString().slice(0, 10);
+    const date = new Date(year, month - 1, day);
+    const dateString = formatDateToInputValue(date);
 
     days.push({
       date: dateString,
@@ -415,4 +422,12 @@ function convertJsDayToMondayFirst(jsDay: number) {
   }
 
   return jsDay - 1;
+}
+
+function formatDateToInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
 }

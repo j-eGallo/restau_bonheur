@@ -38,10 +38,17 @@ type TypeCuisine = {
   logo_url: string;
 };
 
-
-
 export default function FormRes() {
-  const { id } = useLocalSearchParams();
+  const {
+    id,
+    reservationId,
+    date: dateParam,
+    heure: heureParam,
+    service: serviceParam,
+    nb_personnes: nbPersonnesParam,
+  } = useLocalSearchParams();
+
+  const isEditMode = !!reservationId;
 
   // States pour chaque champs
   const [date, setDate] = useState("");
@@ -49,35 +56,10 @@ export default function FormRes() {
   const [heure, setHeure] = useState("");
   const [nbPersonnes, setNbPersonnes] = useState("");
   const [restaurant, setRestaurant] = useState<Restaurant | null>(null);
-  
 
   const dateInputRef = useRef<HTMLInputElement | null>(null);
 
   const [horaires, setHoraires] = useState<Horaire[]>([]);
-
-    useEffect(() => {
-    const fetchRestaurant = async () => {
-      try {
-        const restaurantId = Array.isArray(id) ? id[0] : id;
-
-        if (!restaurantId) {
-          return;
-        }
-
-        const response = await fetch(`http://localhost:8000/api/restaurant/get/${restaurantId}`);
-        const data = await response.json();
-
-        console.log("RESTAURANT :", data);
-        console.log("PLATS REÇUS :", data.restaurant?.plats);
-
-        setRestaurant(data.restaurant ?? null);
-      } catch (error) {
-        console.log("Erreur fetch Restaurant :", error);
-      }
-    };
-
-    fetchRestaurant();
-  }, [id]);
 
   // State pour ouvrir / fermer le choix Midi / Soir
   const [serviceModalVisible, setServiceModalVisible] = useState(false);
@@ -86,7 +68,25 @@ export default function FormRes() {
   const [heureModalVisible, setHeureModalVisible] = useState(false);
 
   // Date du jour pour bloquer les anciennes dates
-  const today = new Date().toISOString().split("T")[0];
+  const today = formatDateToInputValue(new Date());
+
+  useEffect(() => {
+    if (dateParam) {
+      setDate(getParamValue(dateParam));
+    }
+
+    if (serviceParam) {
+      setService(getParamValue(serviceParam));
+    }
+
+    if (heureParam) {
+      setHeure(getParamValue(heureParam));
+    }
+
+    if (nbPersonnesParam) {
+      setNbPersonnes(getParamValue(nbPersonnesParam));
+    }
+  }, [dateParam, serviceParam, heureParam, nbPersonnesParam]);
 
   // Si je ne suis pas connecté, je serai automatiquement redirigé vers Auth
   useEffect(() => {
@@ -101,7 +101,7 @@ export default function FormRes() {
     checkToken();
   }, []);
 
-  // Fetch les horaires du restaurant
+  // Fetch du restaurant + horaires
   useEffect(() => {
     const fetchRestaurant = async () => {
       try {
@@ -114,11 +114,13 @@ export default function FormRes() {
         const response = await fetch(`http://localhost:8000/api/restaurant/get/${restaurantId}`);
         const data = await response.json();
 
+        console.log("RESTAURANT :", data);
         console.log("HORAIRES RESTAURANT :", data.restaurant?.horaires);
 
+        setRestaurant(data.restaurant ?? null);
         setHoraires(data.restaurant?.horaires ?? []);
       } catch (error) {
-        console.log("Erreur fetch horaires :", error);
+        console.log("Erreur fetch Restaurant :", error);
       }
     };
 
@@ -199,6 +201,23 @@ export default function FormRes() {
 
   const heuresDisponibles = genererHeuresDisponibles();
 
+  const handleBack = () => {
+    if (isEditMode) {
+      router.replace("/MesReservations");
+      return;
+    }
+
+    if (!restaurant) {
+      router.replace("/home");
+      return;
+    }
+
+    router.push({
+      pathname: "/PageRestaurant",
+      params: { id: String(restaurant.id) },
+    });
+  };
+
   const handleReserver = async () => {
     try {
       const token = await AsyncStorage.getItem("client_token");
@@ -235,14 +254,20 @@ export default function FormRes() {
         return;
       }
 
-      // Appel de la route API
-      const response = await fetch("http://localhost:8000/api/reservation/addReservation", {
+      const url = isEditMode
+        ? "http://localhost:8000/api/reservation/updateReservation"
+        : "http://localhost:8000/api/reservation/addReservation";
+
+      const response = await fetch(url, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify({
+          ...(isEditMode && {
+            id: Number(getParamValue(reservationId)),
+          }),
           id_restaurant: Number(restaurantId),
           date: date,
           service: service,
@@ -261,60 +286,61 @@ export default function FormRes() {
         return;
       }
 
-      console.log("Réservation effectuée :", data);
-      router.replace("/home");
+      if (isEditMode) {
+        console.log("Réservation modifiée :", data);
+      } else {
+        console.log("Réservation effectuée :", data);
+      }
+
+      router.replace("/MesReservations");
     } catch (error) {
       console.log("Erreur fetch réservation :", error);
     }
   };
 
-    // Navigation vers le restaurant cliqué :
-  const goToPage = (id: number) => {
-    router.push({
-      pathname: "/PageRestaurant",
-      params: { id },
-    });
-};
-
   return (
     <View style={styles.page}>
-    <TopBar/>
-    <Pressable
-      style={styles.back}
-      onPress={() => {
-        if (!restaurant) {
-          return;
-        }
+      <TopBar />
 
-        goToPage(restaurant.id);
-      }}
-    >      
-    <Image
-            source={require("../../assets/images/back.png")}
-            style={styles.backimage}
-    />
-    </Pressable>
-    
-    <View style={styles.restaupart}>
-      <AppText style={styles.nomrestau}>{restaurant?.nom.toUpperCase()}</AppText>
-      <AppText style={styles.restauinfos}>{restaurant?.nm_rue} {restaurant?.rue}</AppText>
-      <AppText style={styles.restauinfos}>{restaurant?.code_postal}, {restaurant?.ville}</AppText>
-              <View style={styles.stars}>
-                {[1, 2, 3, 4, 5].map((star) => (
-                  <AppText
-                    key={star}
-                    style={[
-                      styles.star,
-                      star <= Math.round(restaurant?.note_moyenne ?? 0)
-                        ? styles.starActive
-                        : styles.starInactive,
-                    ]}
-                  >
-                    ★
-                  </AppText>
-                ))}
-              </View>
-    </View>
+      <Pressable
+        style={styles.back}
+        onPress={handleBack}
+      >
+        <Image
+          source={require("../../assets/images/back.png")}
+          style={styles.backimage}
+        />
+      </Pressable>
+
+      <View style={styles.restaupart}>
+        <AppText style={styles.nomrestau}>
+          {restaurant?.nom?.toUpperCase()}
+        </AppText>
+
+        <AppText style={styles.restauinfos}>
+          {restaurant?.nm_rue} {restaurant?.rue}
+        </AppText>
+
+        <AppText style={styles.restauinfos}>
+          {restaurant?.code_postal}, {restaurant?.ville}
+        </AppText>
+
+        <View style={styles.stars}>
+          {[1, 2, 3, 4, 5].map((star) => (
+            <AppText
+              key={star}
+              style={[
+                styles.star,
+                star <= Math.round(restaurant?.note_moyenne ?? 0)
+                  ? styles.starActive
+                  : styles.starInactive,
+              ]}
+            >
+              ★
+            </AppText>
+          ))}
+        </View>
+      </View>
 
       <View style={styles.form}>
 
@@ -420,7 +446,9 @@ export default function FormRes() {
 
         {/* Bouton de réservation */}
         <Pressable style={styles.button} onPress={handleReserver}>
-          <AppText style={styles.buttonText}>Réserver</AppText>
+          <AppText style={styles.buttonText}>
+            {isEditMode ? "Modifier réservation" : "Réserver"}
+          </AppText>
         </Pressable>
       </View>
 
@@ -495,38 +523,36 @@ export default function FormRes() {
 }
 
 const styles = StyleSheet.create({
-
-
-  back : {
+  back: {
     marginTop: 100,
     width: "100%",
-    marginLeft: 48
+    marginLeft: 48,
   },
 
   backimage: {
     height: 43,
     width: 43,
+    resizeMode: "contain",
   },
 
-  restaupart : {
+  restaupart: {
     width: "100%",
-    alignItems: "center"
+    alignItems: "center",
   },
 
   restauinfos: {
     color: "#2D2D2D",
     fontSize: 20,
-    fontWeight: 900
+    fontWeight: "900",
   },
-
 
   nomrestau: {
     color: "#ec5b15",
     fontSize: 20,
-    fontWeight: 900
+    fontWeight: "900",
   },
 
-    stars: {
+  stars: {
     flexDirection: "row",
     alignItems: "center",
   },
@@ -547,13 +573,13 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: "white",
     alignItems: "center",
-    overflow: "hidden"
+    overflow: "hidden",
   },
 
   form: {
     width: "100%",
     alignItems: "center",
-    marginTop: 88
+    marginTop: 88,
   },
 
   field: {
@@ -597,7 +623,7 @@ const styles = StyleSheet.create({
   },
 
   button: {
-    width: 210,
+    width: 300,
     height: 58,
     backgroundColor: "#ec5b15",
     borderRadius: 35,
@@ -609,7 +635,7 @@ const styles = StyleSheet.create({
 
   buttonText: {
     color: "white",
-    fontSize: 24,
+    fontSize: 22,
     fontWeight: "900",
   },
 
@@ -666,3 +692,19 @@ const styles = StyleSheet.create({
     color: "#ec5b15",
   },
 });
+
+function getParamValue(value: string | string[] | undefined) {
+  if (!value) {
+    return "";
+  }
+
+  return Array.isArray(value) ? value[0] : value;
+}
+
+function formatDateToInputValue(date: Date) {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const day = String(date.getDate()).padStart(2, "0");
+
+  return `${year}-${month}-${day}`;
+}
