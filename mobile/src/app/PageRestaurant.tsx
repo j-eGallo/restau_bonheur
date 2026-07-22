@@ -172,6 +172,15 @@ export default function PageRestaurant() {
       <TopBar />
 
       <ScrollView contentContainerStyle={styles.scrollContent}>
+              <Pressable
+        style={styles.back}
+       onPress={() => router.replace("/home")} 
+      >      
+      <Image
+              source={require("../../assets/images/back.png")}
+              style={styles.backimage}
+      />
+      </Pressable>
         <View style={styles.content}>
           <View style={styles.top}>
             <AppText style={styles.nom}>
@@ -284,6 +293,18 @@ const styles = StyleSheet.create({
   page: {
     flex: 1,
     backgroundColor: "white",
+    overflow: "hidden"
+  },
+
+  back : {
+    marginTop: 100,
+    width: "100%",
+    marginLeft: 20
+  },
+
+  backimage: {
+    height: 43,
+    width: 43,
   },
 
   scrollContent: {
