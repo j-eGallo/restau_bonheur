@@ -11,6 +11,7 @@ use App\Repository\AvisRepository;
 use App\Repository\HoraireRepository;
 use App\Repository\PhotoRepository;
 use App\Repository\PlatRepository;
+use App\Repository\TypeCuisineRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -172,6 +173,94 @@ final class RestauController extends AbstractController
         'nombre_avis' => $nombreAvis,
         'est_ouvert' => $estOuvert,
       ]
+    ]);
+  }
+
+
+  #[Route('/api/restaurant/by-type/{id}', name: 'restaurants_by_type', methods: ['GET'])]
+  public function getRestaurantsByType(
+    int $id,
+    TypeCuisineRepository $typeCuisineRepository,
+    AvisRepository $avisRepository
+  ): JsonResponse {
+
+    $typeCuisine = $typeCuisineRepository->find($id);
+
+    if (!$typeCuisine) {
+      return $this->json([
+        'error' => 'Type de cuisine introuvable'
+      ], 404);
+    }
+
+    $restaurantsData = [];
+
+    foreach ($typeCuisine->getRestaurants() as $restaurant) {
+
+      $avis = $avisRepository->findBy([
+        'restaurant' => $restaurant
+      ]);
+
+      $nombreAvis = count($avis);
+      $total = 0;
+
+      foreach ($avis as $avi) {
+        $total += $avi->getNote();
+      }
+
+      if ($nombreAvis > 0) {
+        $moyenne = $total / $nombreAvis;
+      } else {
+        $moyenne = 0;
+      }
+
+      $restaurantsData[] = [
+        'id' => $restaurant->getId(),
+        'nom' => $restaurant->getNom(),
+        'logo_url' => $restaurant->getLogoUrl(),
+        'ville' => $restaurant->getVille(),
+        'note_moyenne' => round($moyenne, 1),
+        'nombre_avis' => $nombreAvis,
+      ];
+    }
+
+    return $this->json([
+      'type_cuisine' => [
+        'id' => $typeCuisine->getId(),
+        'nom' => $typeCuisine->getNom(),
+      ],
+      'restaurants' => $restaurantsData
+    ], 200);
+  }
+
+
+  #[Route('/api/restaurant/latest', name: 'latest_restaurants', methods: ['GET'])]
+  public function getLatestRestaurants(
+    RestaurantRepository $restaurantRepository
+  ): JsonResponse {
+
+    $restaurants = $restaurantRepository->findBy(
+      [],
+      ['id' => 'DESC'],
+      6
+    );
+
+    $restaurantsData = [];
+
+    foreach ($restaurants as $restaurant) {
+      $restaurantsData[] = [
+        'id' => $restaurant->getId(),
+        'nom' => $restaurant->getNom(),
+        'logo_url' => $restaurant->getLogoUrl(),
+        'telephone' => $restaurant->getTelephone(),
+        'nm_rue' => $restaurant->getNmRue(),
+        'rue' => $restaurant->getRue(),
+        'code_postal' => $restaurant->getCodePostal(),
+        'ville' => $restaurant->getVille(),
+      ];
+    }
+
+    return $this->json([
+      'restaurants' => $restaurantsData
     ]);
   }
 

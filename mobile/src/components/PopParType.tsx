@@ -130,7 +130,7 @@ export default function PopParType() {
                   ★
           </Text>
         ))}
-      </View>
+            </View>
           </View>
         );
       })}

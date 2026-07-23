@@ -71,6 +71,7 @@ security:
             jwt: ~
 
     access_control:
+        - { path: ^/api/restaurant/by-type, roles: PUBLIC_ACCESS }
         - { path: ^/api/reservation/threeLastRes, roles: PUBLIC_ACCESS }
         - { path: ^/api/restaurant/latest, roles: PUBLIC_ACCESS }
         - { path: ^/api/restaurant/get, roles: PUBLIC_ACCESS }

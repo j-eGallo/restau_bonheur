@@ -13,18 +13,6 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 
 export default function Home() {
   
-  // Si je ne suis pas connecté, je serai automatiquement redirigé vers Auth
-useEffect(() => {
-  const checkToken = async () => {
-    const token = await AsyncStorage.getItem("client_token");
-
-    if (!token) {
-      router.replace("/auth");
-    }
-  };
-
-  checkToken();
-}, []);
 
 return (
   <View style={styles.container}>

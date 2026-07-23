@@ -1,7 +1,13 @@
 import { useEffect, useState } from "react";
-import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
+import {
+  View,
+  ScrollView,
+  Image,
+  Pressable,
+  StyleSheet,
+} from "react-native";
 import AppText from "../components/AppText";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 
 type TypeCuisine = {
   id: number;
@@ -10,83 +16,109 @@ type TypeCuisine = {
 };
 
 export default function Navbar() {
+  const [typesCuisine, setTypesCuisine] = useState<TypeCuisine[]>([]);
 
-const [typesCuisine, setTypesCuisine] = useState<TypeCuisine[]>([]);
+  // ID du type de cuisine actuellement présent dans l'URL
+  const { id } = useLocalSearchParams<{ id?: string | string[] }>();
 
-    
-useEffect(() => {
- 
+  const selectedTypeId = Array.isArray(id) ? id[0] : id;
+
+  useEffect(() => {
     const fetchTypeCuisine = async () => {
-    try {
-    const response = await fetch("http://localhost:8000/api/type-cuisine/get");
-    const data = await response.json();
+      try {
+        const response = await fetch(
+          "http://localhost:8000/api/type-cuisine/get"
+        );
 
-    console.log("TYPES CUISINE :", data);
-    setTypesCuisine(data.types_cuisine ?? []);
-   }
+        const data = await response.json();
 
+        if (!response.ok) {
+          console.log(
+            "Erreur récupération types cuisine :",
+            data.error
+          );
+          return;
+        }
 
-  catch(error) {
+        console.log("TYPES CUISINE :", data);
+
+        setTypesCuisine(data.types_cuisine ?? []);
+      } catch (error) {
         console.log("Erreur fetch types cuisine :", error);
-  }
+      }
+    };
+
+    fetchTypeCuisine();
+  }, []);
+
+  const getImageUrl = (logoUrl: string) => {
+    if (!logoUrl) {
+      return "";
     }
-      fetchTypeCuisine();
-   }, [] );
 
+    if (logoUrl.startsWith("/")) {
+      return `http://localhost:8000${logoUrl}`;
+    }
 
-   const getImageUrl = (logoUrl: string) => {
-  if (logoUrl.startsWith("http://localhost:8000")) {
-    return logoUrl.replace("http://localhost:8000", "http://localhost:8000");
-  }
+    return logoUrl;
+  };
 
-  if (logoUrl.startsWith("/")) {
-    return `http://localhost:8000${logoUrl}`;
-  }
+  const goToTypePage = (typeId: number) => {
+    router.push({
+      pathname: "/RestauParType",
+      params: {
+        id: typeId.toString(),
+      },
+    });
+  };
 
-  return logoUrl;
-};
-
-
-const goToTypePage = (id: number) => {
-  router.push({
-    pathname: "/RestauParType",
-    params: { id },
-  });
-};
-
-
- return (
+  return (
     <View style={styles.navbar}>
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
         contentContainerStyle={styles.scrollContent}
       >
-        {typesCuisine.map((typeCuisine) => (
-          <Pressable
-            key={typeCuisine.id}
-            style={styles.item}
-            onPress={() => goToTypePage(typeCuisine.id)}
-            >
-            <Image
-              source={{ uri: getImageUrl(typeCuisine.logo_url) }}       
-              style={styles.logo}
-            />
+        {typesCuisine.map((typeCuisine) => {
+          const isSelected =
+            selectedTypeId === typeCuisine.id.toString();
 
-            <AppText style={styles.label}>
-              {typeCuisine.nom.charAt(0).toUpperCase() + typeCuisine.nom.slice(1)}
-            </AppText>
-          </Pressable>
-        ))}
+          return (
+            <Pressable
+              key={typeCuisine.id}
+              style={[
+                styles.item,
+                isSelected && styles.itemSelected,
+              ]}
+              onPress={() => goToTypePage(typeCuisine.id)}
+            >
+              <Image
+                source={{
+                  uri: getImageUrl(typeCuisine.logo_url),
+                }}
+                style={styles.logo}
+              />
+
+              <AppText
+                style={[
+                  styles.label,
+                  isSelected && styles.labelSelected,
+                ]}
+              >
+                {typeCuisine.nom.charAt(0).toUpperCase() +
+                  typeCuisine.nom.slice(1)}
+              </AppText>
+            </Pressable>
+          );
+        })}
       </ScrollView>
     </View>
   );
 }
 
-
 const styles = StyleSheet.create({
   navbar: {
-    height: 100,
+    height: 110,
     backgroundColor: "white",
     borderBottomWidth: 1,
     borderBottomColor: "#ddd",
@@ -101,26 +133,38 @@ const styles = StyleSheet.create({
   scrollContent: {
     alignItems: "center",
     paddingHorizontal: 12,
-    gap: 18,
+    gap: 12,
   },
 
   item: {
     alignItems: "center",
     justifyContent: "center",
-    minWidth: 70,
+    minWidth: 85,
+    minHeight: 95,
+    paddingHorizontal: 8,
+    paddingVertical: 6,
+    borderRadius: 12,
+  },
+
+  itemSelected: {
+    backgroundColor: "#ec5b15",
   },
 
   logo: {
-    width: 60,
-    height: 58,
+    width: 55,
+    height: 50,
     resizeMode: "contain",
   },
 
   label: {
     marginTop: 5,
-    fontSize: 20,
+    fontSize: 17,
     color: "#ec5b15",
     fontWeight: "bold",
     textAlign: "center",
+  },
+
+  labelSelected: {
+    color: "white",
   },
 });
