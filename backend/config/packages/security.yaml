@@ -89,6 +89,7 @@ security:
         - { path: ^/api/registerClient, roles: PUBLIC_ACCESS }
         - { path: ^/api/loginClient, roles: PUBLIC_ACCESS }
 
+        - { path: ^/api/client/me, roles: IS_AUTHENTICATED_FULLY }
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:

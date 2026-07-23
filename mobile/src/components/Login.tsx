@@ -1,5 +1,11 @@
-import { View, TextInput, Image, StyleSheet, Pressable } from "react-native";
-import { useState } from "react";
+import {
+  View,
+  TextInput,
+  Image,
+  StyleSheet,
+  Pressable,
+  ActivityIndicator,
+} from "react-native";import { useState } from "react";
 import AppText from "../components/AppText";
 import { router } from "expo-router";
 import AsyncStorage from "@react-native-async-storage/async-storage";
@@ -15,44 +21,88 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
     // States pour chaque champs
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
+
+    //States pour le chargement
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
   
 
   // Valider Inscription
-  const handleLogin = async () => {
-    const token = await AsyncStorage.getItem("client_token");
+const handleLogin = async () => {
+  if (!email.trim() || !password.trim()) {
+    setError("Veuillez remplir tous les champs.");
+    return;
+  }
+
   try {
-    
-    
-    // Appel de la route API
-    const response = await fetch("http://localhost:8000/api/loginClient", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        email: email,
-        password: password,
-      }),
-    });
+    setLoading(true);
+    setError("");
 
-    const data = await response.json();
+    const response = await fetch(
+      "http://localhost:8000/api/loginClient",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          email: email.trim(),
+          password,
+        }),
+      }
+    );
 
-    console.log("STATUS :", response.status);
-    console.log("REPONSE :", data);
+    const responseText = await response.text();
 
-    if (!response.ok) {
-      console.log("Erreur connexion :", data);
+    let data: any = {};
+
+    try {
+      data = responseText ? JSON.parse(responseText) : {};
+    } catch {
+      setError("Le serveur a renvoyé une réponse invalide.");
       return;
     }
 
-    console.log("Client bien connecté :", data);
+    console.log("STATUS LOGIN :", response.status);
+    console.log("RÉPONSE LOGIN :", data);
+
+    if (!response.ok) {
+      setError(
+        data.error ??
+          data.message ??
+          "Adresse e-mail ou mot de passe incorrect."
+      );
+      return;
+    }
+
+    if (!data.token) {
+      setError("Le serveur n'a renvoyé aucun token.");
+      return;
+    }
+
+    await AsyncStorage.setItem(
+      "client_token",
+      data.token
+    );
+
+    // Seulement si ta route renvoie aussi data.client
+    if (data.client) {
+      await AsyncStorage.setItem(
+        "client_user",
+        JSON.stringify(data.client)
+      );
+    }
+
     router.replace("/home");
-    
-    await AsyncStorage.setItem("client_token", data.token);
-    
-  
   } catch (error) {
-    console.log("Erreur fetch inscription :", error);
+    console.log("Erreur connexion :", error);
+
+    setError(
+      "Impossible de contacter le serveur."
+    );
+  } finally {
+    setLoading(false);
   }
 };
   return (
@@ -85,9 +135,30 @@ export default function Login({ onSwitchToRegister }: LoginProps) {
             />
           </View>
 
-          <Pressable style={styles.submit} onPress={handleLogin}>
-            <AppText style={styles.btnext}>CONNEXION</AppText>
+          <Pressable
+            style={[
+              styles.submit,
+              loading && styles.submitDisabled,
+            ]}
+            onPress={handleLogin}
+            disabled={loading}
+          >
+            {loading ? (
+              <ActivityIndicator
+                size="small"
+                color="white"
+              />
+            ) : (
+              <AppText style={styles.btnext}>
+                CONNEXION
+              </AppText>
+            )}
           </Pressable>
+          {error !== "" && (
+            <AppText style={styles.errorText}>
+              {error}
+            </AppText>
+          )}
 
           <Pressable onPress={onSwitchToRegister}>
             <AppText style={styles.switchText}>
@@ -177,6 +248,17 @@ const styles = StyleSheet.create({
   switchText: {
   marginTop: 12,
   color: "#ec5b15",
+  textAlign: "center",
+  fontWeight: "bold",
+},
+
+submitDisabled: {
+  opacity: 0.65,
+},
+
+errorText: {
+  color: "#c62828",
+  fontSize: 14,
   textAlign: "center",
   fontWeight: "bold",
 },

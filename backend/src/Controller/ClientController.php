@@ -10,6 +10,7 @@ use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use OpenApi\Attributes as OA;
+use Symfony\Component\HttpFoundation\JsonResponse;
 
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
@@ -103,6 +104,12 @@ final class ClientController extends AbstractController
 
         return $this->json([
           'error' => 'Champs manquants'
+        ], 400);
+      }
+
+      if (strlen($password) < 8) {
+        return $this->json([
+          'error' => 'Le mot de passe doit contenir au moins 8 caractères'
         ], 400);
       }
 
@@ -240,17 +247,29 @@ final class ClientController extends AbstractController
   }
 
 
-  #[OA\Post(
-    path: '/api/logoutClient',
-    summary: 'Déconnexion d’un client',
-    description: 'Permet de déconnecter un client côté frontend. Avec JWT, la déconnexion consiste principalement à supprimer le token stocké côté client.',
-    tags: ['Client']
-  )]
-  #[OA\Response(
-    response: 200,
-    description: 'Client déconnecté'
-  )]
-  #[Route('/api/logoutClient', methods: ['POST'])]
+  #[Route('/api/client/me', name: 'client_me', methods: ['GET'])]
+  public function getClientProfile(): JsonResponse
+  {
+    $client = $this->getUser();
+
+    if (!$client instanceof Client) {
+      return $this->json([
+        'error' => 'Client non connecté'
+      ], 401);
+    }
+
+    return $this->json([
+      'client' => [
+        'id' => $client->getId(),
+        'nom' => $client->getNom(),
+        'prenom' => $client->getPrenom(),
+        'email' => $client->getEmail(),
+        'telephone' => $client->getTelephone(),
+      ]
+    ], 200);
+  }
+
+
   public function logoutClient()
   {
 
@@ -357,6 +376,19 @@ final class ClientController extends AbstractController
     }
 
     if ($email) {
+      $existingClient = $clientRepository->findOneBy([
+        'email' => $email
+      ]);
+
+      if (
+        $existingClient &&
+        $existingClient->getId() !== $client->getId()
+      ) {
+        return $this->json([
+          'error' => 'Cette adresse email est déjà utilisée'
+        ], 409);
+      }
+
       $client->setEmail($email);
     }
 
@@ -377,7 +409,14 @@ final class ClientController extends AbstractController
     $entityManager->flush();
 
     return $this->json([
-      'message' => 'Client modifié avec succès'
+      'message' => 'Client modifié avec succès',
+      'client' => [
+        'id' => $client->getId(),
+        'nom' => $client->getNom(),
+        'prenom' => $client->getPrenom(),
+        'email' => $client->getEmail(),
+        'telephone' => $client->getTelephone(),
+      ]
     ]);
   }
 

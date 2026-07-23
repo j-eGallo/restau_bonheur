@@ -1,4 +1,4 @@
-import { View, TextInput, Image, StyleSheet, Pressable } from "react-native";
+import { View, TextInput, Image, StyleSheet, Pressable, ActivityIndicator } from "react-native";
 import { useState } from "react";
 
 import AppText from "../components/AppText";
@@ -13,6 +13,9 @@ export default function Register({ onSwitchToLogin }: RegisterProps) {
   // State pour valider la première étape du formulaire d'inscription (en gros la première partie)
   const [etapeUneOk, setEtapeUneOk] = useState(false);
 
+  // State pour chargement
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
   // States pour chaque champs
   const [nom, setNom] = useState("");
@@ -30,39 +33,78 @@ const etapeUneComplete =
   email.trim() !== "" &&
   telephone.trim() !== "";
 
+// Vérification de la validité du mot de passe
+const motDePasseValide =
+  password.length >= 8 &&
+  confirmPassword.length >= 8 &&
+  password === confirmPassword;
+
 
 // Valider Inscription
-  const handleRegister = async () => {
+const handleRegister = async () => {
+  if (!password.trim() || !confirmPassword.trim()) {
+    setError("Veuillez remplir les deux champs de mot de passe.");
+    return;
+  }
+
   if (password !== confirmPassword) {
-    console.log("Les mots de passe ne correspondent pas");
+    setError("Les mots de passe ne correspondent pas.");
+    return;
+  }
+
+  if (password.length < 8) {
+    setError(
+      "Le mot de passe doit contenir au moins 8 caractères."
+    );
     return;
   }
 
   try {
-    
-    
-    
-    const response = await fetch("http://localhost:8000/api/registerClient", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        nom: nom,
-        prenom: prenom,
-        email: email,
-        telephone: telephone,
-        password: password,
-      }),
-    });
+    setLoading(true);
+    setError("");
 
-    const data = await response.json();
+    const response = await fetch(
+      "http://localhost:8000/api/registerClient",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Accept: "application/json",
+        },
+        body: JSON.stringify({
+          nom: nom.trim(),
+          prenom: prenom.trim(),
+          email: email.trim(),
+          telephone: telephone.trim(),
+          password,
+        }),
+      }
+    );
 
-    console.log("STATUS :", response.status);
-    console.log("REPONSE :", data);
+    const responseText = await response.text();
+
+    let data: any = {};
+
+    try {
+      data = responseText
+        ? JSON.parse(responseText)
+        : {};
+    } catch {
+      setError(
+        "Le serveur a renvoyé une réponse invalide."
+      );
+      return;
+    }
+
+    console.log("STATUS INSCRIPTION :", response.status);
+    console.log("RÉPONSE INSCRIPTION :", data);
 
     if (!response.ok) {
-      console.log("Erreur inscription :", data);
+      setError(
+        data.error ??
+          data.message ??
+          "Impossible de créer le compte."
+      );
       return;
     }
 
@@ -70,7 +112,13 @@ const etapeUneComplete =
 
     onSwitchToLogin();
   } catch (error) {
-    console.log("Erreur fetch inscription :", error);
+    console.log("Erreur inscription :", error);
+
+    setError(
+      "Impossible de contacter le serveur."
+    );
+  } finally {
+    setLoading(false);
   }
 };
 
@@ -119,18 +167,23 @@ const etapeUneComplete =
                 />
               </View>
 
-              <Pressable
-                style={[
-                  styles.submit,
-                  !etapeUneComplete && styles.submitDisabled
-                ]}
-                onPress={() => {
-                  if (!etapeUneComplete) return;
-                  setEtapeUneOk(true);
-                  }}
->
-  <AppText style={styles.btnext}>SUIVANT</AppText>
-</Pressable>
+            <Pressable
+              style={[
+                styles.submit,
+                !etapeUneComplete && styles.submitDisabled,
+              ]}
+              onPress={() => {
+                if (!etapeUneComplete) return;
+
+                setError("");
+                setEtapeUneOk(true);
+              }}
+              disabled={!etapeUneComplete}
+            >
+              <AppText style={styles.btnext}>
+                SUIVANT
+              </AppText>
+            </Pressable>
             </>
           ) : (
             <>
@@ -142,6 +195,16 @@ const etapeUneComplete =
                    value={password}
                    onChangeText={setPassword}
                 />
+              <AppText
+                style={[
+                  styles.passwordHint,
+                  password.length >= 8 && styles.passwordHintValid,
+                ]}
+              >
+                {password.length >= 8
+                  ? "✓ Minimum 8 caractères respecté"
+                  : `${password.length}/8 caractères minimum`}
+              </AppText>
               </View>
 
               <View style={styles.field}>
@@ -154,18 +217,48 @@ const etapeUneComplete =
                   value={confirmPassword}
                   onChangeText={setConfirmPassword}
                 />
+              {confirmPassword.length > 0 && (
+                <AppText
+                  style={[
+                    styles.passwordHint,
+                    password === confirmPassword &&
+                      styles.passwordHintValid,
+                  ]}
+                >
+                  {password === confirmPassword
+                    ? "✓ Les mots de passe correspondent"
+                    : "Les mots de passe ne correspondent pas"}
+                </AppText>
+              )}
               </View>
 
               <Pressable
-                style={styles.submit}
+                style={[
+                  styles.submit,
+                  (!motDePasseValide || loading) &&
+                    styles.submitDisabled,
+                  loading && styles.submitLoading,
+                ]}
                 onPress={handleRegister}
+                disabled={!motDePasseValide || loading}
               >
-                <AppText 
-                style={styles.btnext} 
-                >
-                  INSCRIPTION
-                </AppText>
+                {loading ? (
+                  <ActivityIndicator
+                    size="small"
+                    color="white"
+                  />
+                ) : (
+                  <AppText style={styles.btnext}>
+                    INSCRIPTION
+                  </AppText>
+                )}
               </Pressable>
+
+              {error !== "" && (
+                <AppText style={styles.errorText}>
+                  {error}
+                </AppText>
+              )}
 
               <Pressable
                 style={styles.backButton}
@@ -266,10 +359,33 @@ const styles = StyleSheet.create({
     textAlign: "center",
     fontWeight: "bold",
   },
+
   switchText: {
     marginTop: 12,
     color: "#ec5b15",
     textAlign: "center",
     fontWeight: "bold",
-}
+  },
+
+  submitLoading: {
+    opacity: 0.65,
+  },
+
+  errorText: {
+    color: "#c62828",
+    fontSize: 14,
+    textAlign: "center",
+    fontWeight: "bold",
+  },
+
+  passwordHint: {
+  color: "#c62828",
+  fontSize: 12,
+  fontWeight: "bold",
+  marginTop: -4,
+  },
+
+  passwordHintValid: {
+    color: "#2e7d32",
+  },
 });
