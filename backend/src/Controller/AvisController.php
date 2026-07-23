@@ -138,7 +138,7 @@ class AvisController extends AbstractController
       $dateHeureReservation = new \DateTime($dateReservation . ' ' . $heureReservation);
 
       $delai = clone $dateHeureReservation;
-      $delai->modify('+24 hours');
+      $delai->modify('+2 hours');
 
       $heureActuelle = new \DateTime();
 
@@ -187,6 +187,83 @@ class AvisController extends AbstractController
     }
   }
 
+
+  #[Route('/api/avis/pending', name: 'avis_pending', methods: ['GET'])]
+  public function getPendingAvis(
+    ReservationRepository $reservationRepository,
+    AvisRepository $avisRepository
+  ): JsonResponse {
+    $client = $this->getUser();
+
+    if (!$client) {
+      return $this->json([
+        'error' => 'Utilisateur non connecté'
+      ], 401);
+    }
+
+    $reservations = $reservationRepository->findBy(
+      [
+        'client' => $client
+      ],
+      [
+        'date' => 'ASC'
+      ]
+    );
+
+    $maintenant = new \DateTime();
+
+    foreach ($reservations as $reservation) {
+      $avisExistant = $avisRepository->findOneBy([
+        'reservation' => $reservation
+      ]);
+
+      if ($avisExistant) {
+        continue;
+      }
+
+      $dateReservation = $reservation
+        ->getDate()
+        ->format('Y-m-d');
+
+      $heureReservation = $reservation
+        ->getHeure()
+        ->format('H:i:s');
+
+      $dateHeureReservation = new \DateTime(
+        $dateReservation . ' ' . $heureReservation
+      );
+
+      $dateAutorisee = clone $dateHeureReservation;
+      $dateAutorisee->modify('+2 hours');
+
+      if ($maintenant >= $dateAutorisee) {
+        return $this->json([
+          'reservation' => [
+            'id' => $reservation->getId(),
+            'date' => $dateReservation,
+            'heure' => $reservation
+              ->getHeure()
+              ->format('H:i'),
+            'restaurant' => [
+              'id' => $reservation
+                ->getRestaurant()
+                ->getId(),
+              'nom' => $reservation
+                ->getRestaurant()
+                ->getNom(),
+              'logo_url' => $reservation
+                ->getRestaurant()
+                ->getLogoUrl(),
+            ]
+          ]
+        ], 200);
+      }
+    }
+
+    return $this->json([
+      'reservation' => null
+    ], 200);
+  }
 
 
 

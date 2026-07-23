@@ -90,6 +90,9 @@ security:
         - { path: ^/api/loginClient, roles: PUBLIC_ACCESS }
 
         - { path: ^/api/client/me, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/avis/pending, roles: IS_AUTHENTICATED_FULLY }
+        - { path: ^/api/avis/add, roles: IS_AUTHENTICATED_FULLY }
+
         - { path: ^/api, roles: IS_AUTHENTICATED_FULLY }
 
 when@test:
