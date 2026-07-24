@@ -31,6 +31,7 @@ jobs:
           echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
           echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
           echo "JWT_PASSPHRASE=test-passphrase" >> .env
+          echo "DEFAULT_URI=http://localhost" >> .env
 
       - name: Installer les dépendances backend
         working-directory: ./backend
