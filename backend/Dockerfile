@@ -36,6 +36,9 @@ RUN composer install \
 # Copie du projet
 COPY . .
 
+RUN touch .env
+
+
 # Exécution des scripts Composer après la copie complète
 RUN composer run-script post-install-cmd \
   --no-interaction || true
