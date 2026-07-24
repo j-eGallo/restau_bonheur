@@ -21,6 +21,13 @@ jobs:
           extensions: pdo, pdo_mysql, intl, zip
           tools: composer
 
+      - name: Créer le fichier .env pour la CI
+        working-directory: ./backend
+        run: |
+          echo "APP_ENV=test" > .env
+          echo "APP_DEBUG=0" >> .env
+          echo "APP_SECRET=github-actions-test-secret" >> .env
+
       - name: Installer les dépendances backend
         working-directory: ./backend
         run: composer install --no-interaction --prefer-dist
