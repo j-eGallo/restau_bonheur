@@ -1,0 +1,46 @@
+.note-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-width: 150px;
+  padding: 18px 24px;
+
+  background-color: white;
+  border-radius: 16px;
+
+  box-shadow: 0 4px 15px
+    rgba(0, 0, 0, 0.12);
+}
+
+.note-value {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  color: #2d2d2d;
+  font-size: 24px;
+}
+
+.note-star {
+  color: #ec5b15;
+  font-size: 30px;
+}
+
+.note-count {
+  margin: 6px 0 0;
+
+  color: #666;
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.note-loading,
+.note-empty {
+  margin: 0;
+
+  color: #2d2d2d;
+  font-size: 16px;
+  font-weight: 700;
+}

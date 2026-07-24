@@ -249,3 +249,117 @@
 .btn-photo {
   width: 50px;
 }
+
+.restaurant-places {
+  display: flex;
+  gap: 20px;
+  flex-wrap: wrap;
+}
+
+.restaurant-small-box {
+  border: none;
+  cursor: pointer;
+}
+
+.horaires-modal {
+  width: min(950px, 92vw);
+  max-height: 88vh;
+  overflow-y: auto;
+
+  background: white;
+  border-radius: 20px;
+  padding: 28px;
+}
+
+.horaires-modal h2 {
+  margin-top: 0;
+  text-align: center;
+}
+
+.horaires-warning {
+  margin: 0 0 20px;
+  padding: 12px;
+
+  border-radius: 10px;
+  background: #fff0e9;
+  color: #b33d00;
+
+  text-align: center;
+  font-weight: 700;
+}
+
+.horaires-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.horaire-row {
+  display: grid;
+  grid-template-columns: 120px 1fr 1fr;
+  gap: 18px;
+  align-items: center;
+
+  padding: 15px;
+  border: 1px solid #dedede;
+  border-radius: 12px;
+}
+
+.horaire-jour {
+  color: #ec5b15;
+  font-size: 18px;
+}
+
+.horaire-service {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.horaire-service label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+
+  min-width: 70px;
+  font-weight: 700;
+}
+
+.horaire-service input[type="time"] {
+  padding: 7px;
+  border: 1px solid #aaa;
+  border-radius: 7px;
+}
+
+.horaire-service input:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.horaires-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+
+  margin-top: 25px;
+}
+
+.horaires-cancel {
+  padding: 12px 22px;
+
+  border: 1px solid #666;
+  border-radius: 25px;
+
+  background: white;
+  cursor: pointer;
+}
+
+@media (max-width: 850px) {
+  .horaire-row {
+    grid-template-columns: 1fr;
+  }
+
+  .horaire-service {
+    flex-wrap: wrap;
+  }
+}
