@@ -26,6 +26,9 @@ type Restaurant = {
   type_cuisines: TypeCuisine[];
 };
 
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 export default function PopParType() {
 
       const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -37,7 +40,7 @@ export default function PopParType() {
    
       const fetchRestaurantsPopulaires = async () => {
       try {
-      const response = await fetch("http://localhost:8000/api/restaurant/RestauPlusPop");
+      const response = await fetch(`${API_URL}/api/restaurant/RestauPlusPop`);
       const data = await response.json();
   
       console.log("RESTAURANTS POPULAIRES :", data);
@@ -75,10 +78,10 @@ export default function PopParType() {
   }
 
   if (logoUrl.startsWith("/uploads")) {
-    return `http://localhost:8000${logoUrl}`;
+    return `${API_URL}${logoUrl}`;
   }
 
-  return `http://localhost:8000/images/restaurants/${logoUrl}`;
+  return `${API_URL}/images/restaurants/${logoUrl}`;
 };
 
      return(

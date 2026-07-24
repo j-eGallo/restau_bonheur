@@ -16,6 +16,9 @@ type LoginProps = {
   onSwitchToRegister: () => void;
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function Login({ onSwitchToRegister }: LoginProps) {
 
     // States pour chaque champs
@@ -39,7 +42,7 @@ const handleLogin = async () => {
     setError("");
 
     const response = await fetch(
-      "http://localhost:8000/api/loginClient",
+      `${API_URL}/api/loginClient`,
       {
         method: "POST",
         headers: {

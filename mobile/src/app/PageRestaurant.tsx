@@ -41,6 +41,9 @@ type Restaurant = {
   plats: Plat[];
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function PageRestaurant() {
   const { id } = useLocalSearchParams();
 
@@ -57,7 +60,7 @@ export default function PageRestaurant() {
           return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/restaurant/get/${restaurantId}`);
+        const response = await fetch(`${API_URL}/api/restaurant/get/${restaurantId}`);
         const data = await response.json();
 
         console.log("RESTAURANT :", data);
@@ -82,10 +85,10 @@ export default function PageRestaurant() {
     }
 
     if (url.startsWith("/uploads")) {
-      return `http://localhost:8000${url}`;
+      return `${API_URL}${url}`;
     }
 
-    return `http://localhost:8000${url}`;
+    return `${API_URL}${url}`;
   };
 
   const openPhoto = (index: number) => {

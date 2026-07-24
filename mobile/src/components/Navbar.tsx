@@ -15,6 +15,10 @@ type TypeCuisine = {
   logo_url: string;
 };
 
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function Navbar() {
   const [typesCuisine, setTypesCuisine] = useState<TypeCuisine[]>([]);
 
@@ -27,7 +31,7 @@ export default function Navbar() {
     const fetchTypeCuisine = async () => {
       try {
         const response = await fetch(
-          "http://localhost:8000/api/type-cuisine/get"
+          `${API_URL}/api/type-cuisine/get`
         );
 
         const data = await response.json();
@@ -57,7 +61,7 @@ export default function Navbar() {
     }
 
     if (logoUrl.startsWith("/")) {
-      return `http://localhost:8000${logoUrl}`;
+      return `${API_URL}${logoUrl}`;
     }
 
     return logoUrl;

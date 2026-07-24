@@ -7,6 +7,8 @@ type RegisterProps = {
   onSwitchToLogin: () => void;
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 export default function Register({ onSwitchToLogin }: RegisterProps) {
 
 
@@ -64,7 +66,7 @@ const handleRegister = async () => {
     setError("");
 
     const response = await fetch(
-      "http://localhost:8000/api/registerClient",
+      `${API_URL}/api/registerClient`,
       {
         method: "POST",
         headers: {

@@ -23,6 +23,9 @@ type Restaurant = {
   type_cuisines: TypeCuisine[];
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function SearchRestaurants() {
   const { q } = useLocalSearchParams();
 
@@ -31,7 +34,7 @@ export default function SearchRestaurants() {
   useEffect(() => {
     const fetchRestaurants = async () => {
       try {
-        const response = await fetch("http://localhost:8000/api/restaurant/RestauPlusPop");
+        const response = await fetch(`${API_URL}/api/restaurant/RestauPlusPop`);
         const data = await response.json();
 
         const motRecherche = String(q ?? "").toLowerCase();
@@ -53,17 +56,27 @@ export default function SearchRestaurants() {
     fetchRestaurants();
   }, [q]);
 
-  const getImageUrl = (logoUrl: string) => {
-    if (logoUrl.startsWith("http://localhost:8000")) {
-      return logoUrl.replace("http://localhost:8000", "http://10.0.2.2:8000");
-    }
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
-    if (logoUrl.startsWith("/uploads")) {
-      return `http://10.0.2.2:8000${logoUrl}`;
-    }
+if (!API_URL) {
+  throw new Error("EXPO_PUBLIC_API_URL est introuvable dans le fichier .env");
+}
 
+const getImageUrl = (logoUrl: string) => {
+  if (!logoUrl) {
+    return "";
+  }
+
+  if (logoUrl.startsWith("http://localhost:8000")) {
+    return logoUrl.replace("http://localhost:8000", API_URL);
+  }
+
+  if (logoUrl.startsWith("http://") || logoUrl.startsWith("https://")) {
     return logoUrl;
-  };
+  }
+
+  return `${API_URL}${logoUrl.startsWith("/") ? logoUrl : `/${logoUrl}`}`;
+};
 
   const goToPage = (id: number) => {
     router.push({

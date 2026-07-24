@@ -4,7 +4,7 @@ import TopBar from "./TopBar";
 import SideBar from "./SideBar";
 import "./menu.css";
 
-const API_URL = "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 type TypeCuisine = {
   id: number;

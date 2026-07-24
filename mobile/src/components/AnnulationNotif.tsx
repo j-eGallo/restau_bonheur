@@ -10,7 +10,7 @@ import { router } from "expo-router";
 
 import AppText from "./AppText";
 
-const API_URL = "http://localhost:8000";
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 const RESERVATIONS_URL =
   `${API_URL}/api/reservation/clientReservations`;

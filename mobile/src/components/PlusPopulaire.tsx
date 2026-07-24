@@ -27,6 +27,10 @@ type Restaurant = {
   type_cuisines: TypeCuisine[];
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+console.log("API_URL MOBILE :", API_URL);
+
+
 export default function PlusPopulaire() {
 
   const [restaurants, setRestaurants] = useState<Restaurant[]>([]);
@@ -42,7 +46,7 @@ const fetchRestaurantsPopulaires = async () => {
   try {
     const token = await AsyncStorage.getItem("client_token");
 
-    const response = await fetch("http://localhost:8000/api/restaurant/RestauPlusPop", {
+    const response = await fetch(`${API_URL}/api/restaurant/RestauPlusPop`, {
     });
 
     const data = await response.json();
@@ -65,10 +69,10 @@ const fetchRestaurantsPopulaires = async () => {
   }
 
   if (logoUrl.startsWith("/uploads")) {
-    return `http://localhost:8000${logoUrl}`;
+    return `${API_URL}${logoUrl}`;
   }
 
-  return `http://localhost:8000/images/restaurants/${logoUrl}`;
+  return `${API_URL}/images/restaurants/${logoUrl}`;
 };
 
 // Navigation vers le restaurant cliqué :

@@ -22,6 +22,10 @@ type Restaurant = {
   ville?: string;
 };
 
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function RestaurantsByType() {
   const { id } = useLocalSearchParams<{
     id?: string | string[];
@@ -48,7 +52,7 @@ const fetchRestaurantsByType = async () => {
     setError("");
 
     const response = await fetch(
-      `http://localhost:8000/api/restaurant/by-type/${typeCuisineId}`
+      `${API_URL}/api/restaurant/by-type/${typeCuisineId}`
     );
 
     const data = await response.json();
@@ -88,7 +92,7 @@ const fetchRestaurantsByType = async () => {
     }
 
     if (imageUrl.startsWith("/")) {
-      return `http://localhost:8000${imageUrl}`;
+      return `${API_URL}${imageUrl}`;
     }
 
     return imageUrl;

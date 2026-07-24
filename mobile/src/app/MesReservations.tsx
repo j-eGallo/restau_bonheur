@@ -23,6 +23,8 @@ type Reservation = {
   };
 };
 
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
 export default function MesReservations() {
   const [reservations, setReservations] = useState<Reservation[]>([]);
   const [loading, setLoading] = useState(true);
@@ -57,7 +59,7 @@ export default function MesReservations() {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/reservation/sixLastRes", {
+      const response = await fetch(`${API_URL}/api/reservation/sixLastRes`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -129,7 +131,7 @@ export default function MesReservations() {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/reservation/deleteReservation", {
+      const response = await fetch(`${API_URL}/api/reservation/deleteReservation`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

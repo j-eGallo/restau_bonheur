@@ -38,6 +38,10 @@ type TypeCuisine = {
   logo_url: string;
 };
 
+
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
+
+
 export default function FormRes() {
   const {
     id,
@@ -112,7 +116,7 @@ export default function FormRes() {
           return;
         }
 
-        const response = await fetch(`http://localhost:8000/api/restaurant/get/${restaurantId}`);
+        const response = await fetch(`${API_URL}/api/restaurant/get/${restaurantId}`);
         const data = await response.json();
 
         console.log("RESTAURANT :", data);
@@ -302,8 +306,8 @@ const midiDisponible = serviceMidiDisponible();
       }
 
       const url = isEditMode
-        ? "http://localhost:8000/api/reservation/updateReservation"
-        : "http://localhost:8000/api/reservation/addReservation";
+        ? `${API_URL}/api/reservation/updateReservation`
+        : `${API_URL}/api/reservation/addReservation`;
 
       const response = await fetch(url, {
         method: "POST",

@@ -41,7 +41,7 @@ type Reservation = {
   restaurant: Restaurant;
 }
 
-
+const API_URL = process.env.EXPO_PUBLIC_API_URL;
 
 
 
@@ -62,7 +62,7 @@ useEffect(() => {
         return;
       }
 
-      const response = await fetch("http://localhost:8000/api/reservation/sixLastRes", {
+      const response = await fetch(`${API_URL}/api/reservation/sixLastRes`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -92,10 +92,10 @@ useEffect(() => {
   }
 
   if (logoUrl.startsWith("/uploads")) {
-    return `http://localhost:8000${logoUrl}`;
+    return `${API_URL}${logoUrl}`;
   }
 
-  return `http://localhost:8000/images/restaurants/${logoUrl}`;
+  return `${API_URL}/images/restaurants/${logoUrl}`;
 };
 
 // Navigation vers le restaurant cliqué :

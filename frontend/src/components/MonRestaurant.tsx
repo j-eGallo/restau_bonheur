@@ -16,8 +16,7 @@ import Photo from "../assets/photo.png";
 
 import "./monRestaurant.css";
 
-const API_URL =
-  "http://localhost:8000";
+const API_URL = import.meta.env.VITE_API_URL;
 
 const JOURS = [
   "lundi",
