@@ -69,6 +69,7 @@ export default function FormRes() {
 
   // Date du jour pour bloquer les anciennes dates
   const today = formatDateToInputValue(new Date());
+  
 
   useEffect(() => {
     if (dateParam) {
@@ -154,6 +155,52 @@ export default function FormRes() {
     (horaire) => horaire.jour === jourSelectionne
   );
 
+  const [maintenant, setMaintenant] = useState(new Date());
+
+useEffect(() => {
+  const interval = setInterval(() => {
+    setMaintenant(new Date());
+  }, 30000);
+
+  return () => clearInterval(interval);
+}, []);
+
+const serviceMidiDisponible = () => {
+  if (
+    !date ||
+    !horaireDuJour ||
+    !horaireDuJour.ouvert_midi ||
+    !horaireDuJour.heure_fermeture_midi
+  ) {
+    return false;
+  }
+
+  // Une date future reste disponible
+  if (date > today) {
+    return true;
+  }
+
+  // La date sélectionnée ne devrait jamais être passée
+  if (date < today) {
+    return false;
+  }
+
+  // Nous sommes aujourd'hui : comparaison avec la fermeture du midi
+  const maintenantEnMinutes =
+    maintenant.getHours() * 60 +
+    maintenant.getMinutes();
+
+  const fermetureMidiEnMinutes =
+    convertirHeureEnMinutes(
+      horaireDuJour.heure_fermeture_midi
+    );
+
+  return maintenantEnMinutes < fermetureMidiEnMinutes;
+};
+
+const midiDisponible = serviceMidiDisponible();
+
+
   let heureMin = "";
   let heureMax = "";
 
@@ -167,12 +214,12 @@ export default function FormRes() {
     heureMax = horaireDuJour.heure_fermeture_soir ?? "";
   }
 
-  const convertirHeureEnMinutes = (heureString: string) => {
+  function convertirHeureEnMinutes(heureString: string) {
     const [heures, minutes] = heureString.split(":").map(Number);
     return heures * 60 + minutes;
-  };
+  }
 
-  const convertirMinutesEnHeure = (minutesTotal: number) => {
+  function convertirMinutesEnHeure(minutesTotal: number) {
     const heures = Math.floor(minutesTotal / 60);
     const minutes = minutesTotal % 60;
 
@@ -180,7 +227,7 @@ export default function FormRes() {
     const minutesFormat = String(minutes).padStart(2, "0");
 
     return `${heuresFormat}:${minutesFormat}`;
-  };
+  }
 
   const genererHeuresDisponibles = () => {
     if (!heureMin || !heureMax) {
@@ -463,16 +510,30 @@ export default function FormRes() {
           onPress={() => setServiceModalVisible(false)}
         >
           <View style={styles.serviceModal}>
-            <Pressable
-              style={styles.serviceOption}
-              onPress={() => {
-                setService("midi");
-                setHeure("");
-                setServiceModalVisible(false);
-              }}
+          <Pressable
+            style={[
+              styles.serviceOption,
+              !midiDisponible && styles.serviceOptionDisabled,
+            ]}
+            disabled={!midiDisponible}
+            onPress={() => {
+              setService("midi");
+              setHeure("");
+              setServiceModalVisible(false);
+            }}
+          >
+            <AppText
+              style={[
+                styles.serviceOptionText,
+                !midiDisponible &&
+                  styles.serviceOptionTextDisabled,
+              ]}
             >
-              <AppText style={styles.serviceOptionText}>Midi</AppText>
-            </Pressable>
+              {midiDisponible
+                ? "Midi"
+                : "Midi indisponible"}
+            </AppText>
+          </Pressable>
 
             <View style={styles.modalSeparator} />
 
@@ -691,6 +752,15 @@ const styles = StyleSheet.create({
     fontWeight: "900",
     color: "#ec5b15",
   },
+
+  serviceOptionDisabled: {
+  backgroundColor: "#eeeeee",
+  opacity: 0.6,
+},
+
+serviceOptionTextDisabled: {
+  color: "#888888",
+},
 });
 
 function getParamValue(value: string | string[] | undefined) {

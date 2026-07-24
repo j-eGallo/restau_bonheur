@@ -548,4 +548,60 @@ final class ReservationController extends AbstractController
       'reservations' => $reservationsData
     ]);
   }
+
+
+  #[Route('/api/reservation/clientReservations', methods: ['GET'])]
+  public function getClientReservations(
+    ReservationRepository $reservationRepository
+  ): JsonResponse {
+
+    try {
+
+      // Récupération du client connecté
+      $client = $this->getUser();
+
+      if (!$client) {
+        return $this->json([
+          'error' => 'Utilisateur non connecté'
+        ], 401);
+      }
+
+      // Récupération de toutes les réservations du client
+      $reservations = $reservationRepository->findBy(
+        [
+          'client' => $client
+        ],
+        [
+          'date' => 'ASC',
+          'heure' => 'ASC'
+        ]
+      );
+
+      $reservationsData = [];
+
+      foreach ($reservations as $reservation) {
+        $restaurant = $reservation->getRestaurant();
+
+        $reservationsData[] = [
+          'id' => $reservation->getId(),
+          'date' => $reservation->getDate()->format('Y-m-d'),
+          'heure' => $reservation->getHeure()->format('H:i'),
+          'restaurant' => [
+            'id' => $restaurant->getId(),
+            'nom' => $restaurant->getNom()
+          ]
+        ];
+      }
+
+      return $this->json([
+        'reservations' => $reservationsData
+      ], 200);
+
+    } catch (\Exception $e) {
+
+      return $this->json([
+        'error' => $e->getMessage()
+      ], 500);
+    }
+  }
 }

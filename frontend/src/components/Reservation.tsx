@@ -25,24 +25,59 @@ type ReservationsCache = {
   [date: string]: ReservationItem[];
 };
 
+type DeleteReservationResponse = {
+  message?: string;
+  error?: string;
+};
+
 export default function Reservation() {
   const navigate = useNavigate();
 
   const [reservations, setReservations] = useState<ReservationItem[]>([]);
-  const [reservationsCache, setReservationsCache] = useState<ReservationsCache>({});
+  const [reservationsCache, setReservationsCache] =
+    useState<ReservationsCache>({});
+
   const [selectedDate, setSelectedDate] = useState(getTodayDate());
-  const [serviceFilter, setServiceFilter] = useState<ServiceFilter>("all");
+
+  const [serviceFilter, setServiceFilter] =
+    useState<ServiceFilter>("all");
+
   const [showCalendar, setShowCalendar] = useState(false);
-  const [calendarMonth, setCalendarMonth] = useState(getMonthValue(getTodayDate()));
+
+  const [calendarMonth, setCalendarMonth] = useState(
+    getMonthValue(getTodayDate())
+  );
+
   const [isLoading, setIsLoading] = useState(false);
+
+  // Permet de masquer automatiquement le bouton
+  // lorsque l'heure d'une réservation vient de passer
+  const [currentDateTime, setCurrentDateTime] = useState(
+    new Date()
+  );
 
   useEffect(() => {
     loadReservationsForDate(selectedDate, true);
     prefetchAroundSelectedDate(selectedDate);
   }, [selectedDate]);
 
-  function loadReservationsForDate(date: string, shouldDisplay: boolean) {
-    const token = localStorage.getItem("restaurateur_token");
+  useEffect(() => {
+    const interval = window.setInterval(() => {
+      setCurrentDateTime(new Date());
+    }, 30000);
+
+    return () => {
+      window.clearInterval(interval);
+    };
+  }, []);
+
+  function loadReservationsForDate(
+    date: string,
+    shouldDisplay: boolean
+  ) {
+    const token = localStorage.getItem(
+      "restaurateur_token"
+    );
 
     if (!token) {
       navigate("/");
@@ -61,22 +96,34 @@ export default function Reservation() {
       setIsLoading(true);
     }
 
-    fetch(`${API_URL}/api/restaurateur/reservations?date=${date}`, {
-      method: "GET",
-      headers: {
-        Authorization: `Bearer ${token}`,
-        Accept: "application/json",
-      },
-    })
+    fetch(
+      `${API_URL}/api/restaurateur/reservations?date=${date}`,
+      {
+        method: "GET",
+        headers: {
+          Authorization: `Bearer ${token}`,
+          Accept: "application/json",
+        },
+      }
+    )
       .then(async (res) => {
         const data = await res.json();
 
         if (!res.ok) {
-          console.log("Erreur récupération réservations :", data);
+          console.log(
+            "Erreur récupération réservations :",
+            data
+          );
 
           if (res.status === 401) {
-            localStorage.removeItem("restaurateur_token");
-            localStorage.removeItem("restaurateur_user");
+            localStorage.removeItem(
+              "restaurateur_token"
+            );
+
+            localStorage.removeItem(
+              "restaurateur_user"
+            );
+
             navigate("/");
           }
 
@@ -86,9 +133,12 @@ export default function Reservation() {
         return data;
       })
       .then((data) => {
-        if (!data) return;
+        if (!data) {
+          return;
+        }
 
-        const receivedReservations = data.reservations || [];
+        const receivedReservations =
+          data.reservations || [];
 
         setReservationsCache((prev) => ({
           ...prev,
@@ -100,7 +150,10 @@ export default function Reservation() {
         }
       })
       .catch((error) => {
-        console.error("Erreur fetch réservations :", error);
+        console.error(
+          "Erreur fetch réservations :",
+          error
+        );
       })
       .finally(() => {
         if (shouldDisplay) {
@@ -118,18 +171,28 @@ export default function Reservation() {
   }
 
   const handlePreviousDay = () => {
-    const newDate = changeDateByDays(selectedDate, -1);
+    const newDate = changeDateByDays(
+      selectedDate,
+      -1
+    );
+
     setSelectedDate(newDate);
     setCalendarMonth(getMonthValue(newDate));
   };
 
   const handleNextDay = () => {
-    const newDate = changeDateByDays(selectedDate, 1);
+    const newDate = changeDateByDays(
+      selectedDate,
+      1
+    );
+
     setSelectedDate(newDate);
     setCalendarMonth(getMonthValue(newDate));
   };
 
-  const handleSelectCalendarDate = (date: string) => {
+  const handleSelectCalendarDate = (
+    date: string
+  ) => {
     setSelectedDate(date);
     setCalendarMonth(getMonthValue(date));
     setShowCalendar(false);
@@ -141,20 +204,166 @@ export default function Reservation() {
         return true;
       }
 
-      return reservation.service.toLowerCase() === serviceFilter;
+      return (
+        reservation.service.toLowerCase() ===
+        serviceFilter
+      );
     });
   }, [reservations, serviceFilter]);
 
   const datesWithReservations = useMemo(() => {
     return Object.keys(reservationsCache).filter(
-      (date) => reservationsCache[date].length > 0
+      (date) =>
+        reservationsCache[date].length > 0
     );
   }, [reservationsCache]);
 
   const totalPersons = filteredReservations.reduce(
-    (total, reservation) => total + reservation.nb_personnes,
+    (total, reservation) =>
+      total + reservation.nb_personnes,
     0
   );
+
+  // Vérifie si la réservation est encore future
+  const isReservationCancelable = (
+    reservation: ReservationItem
+  ) => {
+    const [year, month, day] = reservation.date
+      .split("-")
+      .map(Number);
+
+    const [hours, minutes] = reservation.heure
+      .split(":")
+      .map(Number);
+
+    const reservationDateTime = new Date(
+      year,
+      month - 1,
+      day,
+      hours,
+      minutes,
+      0
+    );
+
+    return reservationDateTime > currentDateTime;
+  };
+
+  // Annulation d'une réservation
+  const handleCancelReservation = async (
+    reservationId: number
+  ) => {
+    const token = localStorage.getItem(
+      "restaurateur_token"
+    );
+
+    if (!token) {
+      navigate("/");
+      return;
+    }
+
+    const reservationToCancel =
+      reservations.find(
+        (reservation) =>
+          reservation.id === reservationId
+      );
+
+    if (
+      !reservationToCancel ||
+      !isReservationCancelable(
+        reservationToCancel
+      )
+    ) {
+      alert(
+        "Cette réservation est déjà passée et ne peut plus être annulée."
+      );
+
+      return;
+    }
+
+    const confirmation = window.confirm(
+      "Voulez-vous vraiment annuler cette réservation ?"
+    );
+
+    if (!confirmation) {
+      return;
+    }
+
+    try {
+      const response = await fetch(
+        `${API_URL}/api/reservation/deleteReservation`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            id: reservationId,
+          }),
+        }
+      );
+
+      const responseText = await response.text();
+
+      let data: DeleteReservationResponse = {};
+
+      try {
+        data = responseText
+          ? (JSON.parse(
+              responseText
+            ) as DeleteReservationResponse)
+          : {};
+      } catch {
+        alert(
+          "Le serveur a renvoyé une réponse invalide."
+        );
+
+        return;
+      }
+
+      if (!response.ok) {
+        alert(
+          data.error ??
+            "Impossible d'annuler la réservation."
+        );
+
+        return;
+      }
+
+      // Suppression dans la liste affichée
+      setReservations((prev) =>
+        prev.filter(
+          (reservation) =>
+            reservation.id !== reservationId
+        )
+      );
+
+      // Suppression dans le cache
+      setReservationsCache((prev) => ({
+        ...prev,
+        [selectedDate]: (
+          prev[selectedDate] ?? []
+        ).filter(
+          (reservation) =>
+            reservation.id !== reservationId
+        ),
+      }));
+
+      alert(
+        "La réservation a bien été annulée."
+      );
+    } catch (error) {
+      console.error(
+        "Erreur annulation réservation :",
+        error
+      );
+
+      alert(
+        "Impossible de contacter le serveur."
+      );
+    }
+  };
 
   return (
     <div>
@@ -164,16 +373,31 @@ export default function Reservation() {
         <SideBar />
 
         <main className="reservation-content">
-          <h1 className="reservation-title">MES RÉSERVATIONS</h1>
+          <h1 className="reservation-title">
+            MES RÉSERVATIONS
+          </h1>
 
           <section className="reservation-toolbar">
             <select
               value={serviceFilter}
-              onChange={(e) => setServiceFilter(e.target.value as ServiceFilter)}
+              onChange={(event) =>
+                setServiceFilter(
+                  event.target
+                    .value as ServiceFilter
+                )
+              }
             >
-              <option value="all">Midi & Soir</option>
-              <option value="midi">Midi</option>
-              <option value="soir">Soir</option>
+              <option value="all">
+                Midi & Soir
+              </option>
+
+              <option value="midi">
+                Midi
+              </option>
+
+              <option value="soir">
+                Soir
+              </option>
             </select>
 
             <div className="reservation-date-zone">
@@ -188,7 +412,11 @@ export default function Reservation() {
               <button
                 type="button"
                 className="reservation-date-btn"
-                onClick={() => setShowCalendar((prev) => !prev)}
+                onClick={() =>
+                  setShowCalendar(
+                    (prev) => !prev
+                  )
+                }
               >
                 {formatDateFr(selectedDate)}
               </button>
@@ -207,18 +435,32 @@ export default function Reservation() {
                     <button
                       type="button"
                       onClick={() =>
-                        setCalendarMonth(changeMonthValue(calendarMonth, -1))
+                        setCalendarMonth(
+                          changeMonthValue(
+                            calendarMonth,
+                            -1
+                          )
+                        )
                       }
                     >
                       ‹
                     </button>
 
-                    <span>{formatMonthLabel(calendarMonth)}</span>
+                    <span>
+                      {formatMonthLabel(
+                        calendarMonth
+                      )}
+                    </span>
 
                     <button
                       type="button"
                       onClick={() =>
-                        setCalendarMonth(changeMonthValue(calendarMonth, 1))
+                        setCalendarMonth(
+                          changeMonthValue(
+                            calendarMonth,
+                            1
+                          )
+                        )
                       }
                     >
                       ›
@@ -236,13 +478,24 @@ export default function Reservation() {
                   </div>
 
                   <div className="reservation-calendar-grid">
-                    {getCalendarDays(calendarMonth).map((day, index) => {
+                    {getCalendarDays(
+                      calendarMonth
+                    ).map((day, index) => {
                       if (!day) {
-                        return <div key={`empty-${index}`} />;
+                        return (
+                          <div
+                            key={`empty-${index}`}
+                          />
+                        );
                       }
 
-                      const hasReservation = datesWithReservations.includes(day.date);
-                      const isSelected = day.date === selectedDate;
+                      const hasReservation =
+                        datesWithReservations.includes(
+                          day.date
+                        );
+
+                      const isSelected =
+                        day.date === selectedDate;
 
                       return (
                         <button
@@ -253,9 +506,15 @@ export default function Reservation() {
                               ? "calendar-day calendar-day-selected"
                               : "calendar-day"
                           }
-                          onClick={() => handleSelectCalendarDate(day.date)}
+                          onClick={() =>
+                            handleSelectCalendarDate(
+                              day.date
+                            )
+                          }
                         >
-                          <span>{day.dayNumber}</span>
+                          <span>
+                            {day.dayNumber}
+                          </span>
 
                           {hasReservation && (
                             <span className="calendar-reservation-dot" />
@@ -272,57 +531,126 @@ export default function Reservation() {
           <section className="reservation-summary">
             <div>
               <span>Réservations</span>
-              <strong>{filteredReservations.length}</strong>
+
+              <strong>
+                {filteredReservations.length}
+              </strong>
             </div>
 
             <div>
               <span>Couverts</span>
-              <strong>{totalPersons}</strong>
+
+              <strong>
+                {totalPersons}
+              </strong>
             </div>
 
             <div>
               <span>Date</span>
-              <strong>{formatDateFr(selectedDate)}</strong>
+
+              <strong>
+                {formatDateFr(selectedDate)}
+              </strong>
             </div>
           </section>
 
           {isLoading && (
-            <p className="reservation-loading">Chargement des réservations...</p>
+            <p className="reservation-loading">
+              Chargement des réservations...
+            </p>
           )}
 
-          {!isLoading && filteredReservations.length === 0 && (
-            <section className="reservation-empty-card">
-              <p>Aucune réservation pour cette date.</p>
-            </section>
-          )}
+          {!isLoading &&
+            filteredReservations.length === 0 && (
+              <section className="reservation-empty-card">
+                <p>
+                  Aucune réservation pour cette
+                  date.
+                </p>
+              </section>
+            )}
 
-          {!isLoading && filteredReservations.length > 0 && (
-            <section className="reservation-list">
-              {filteredReservations.map((reservation) => (
-                <article className="reservation-card" key={reservation.id}>
-                  <div className="reservation-card-time">
-                    <strong>{reservation.heure}</strong>
-                    <span>{formatService(reservation.service)}</span>
-                  </div>
+          {!isLoading &&
+            filteredReservations.length > 0 && (
+              <section className="reservation-list">
+                {filteredReservations.map(
+                  (reservation) => {
+                    const canBeCancelled =
+                      isReservationCancelable(
+                        reservation
+                      );
 
-                  <div className="reservation-card-client">
-                    <h2>
-                      {reservation.client.prenom} {reservation.client.nom}
-                    </h2>
+                    return (
+                      <article
+                        className="reservation-card"
+                        key={reservation.id}
+                      >
+                        <div className="reservation-card-time">
+                          <strong>
+                            {reservation.heure}
+                          </strong>
 
-                    <p>{reservation.client.telephone}</p>
-                  </div>
+                          <span>
+                            {formatService(
+                              reservation.service
+                            )}
+                          </span>
+                        </div>
 
-                  <div className="reservation-card-count">
-                    <strong>{reservation.nb_personnes}</strong>
-                    <span>
-                      {reservation.nb_personnes > 1 ? "personnes" : "personne"}
-                    </span>
-                  </div>
-                </article>
-              ))}
-            </section>
-          )}
+                        <div className="reservation-card-client">
+                          <h2>
+                            {
+                              reservation.client
+                                .prenom
+                            }{" "}
+                            {
+                              reservation.client
+                                .nom
+                            }
+                          </h2>
+
+                          <p>
+                            {
+                              reservation.client
+                                .telephone
+                            }
+                          </p>
+                        </div>
+
+                        <div className="reservation-card-count">
+                          <strong>
+                            {
+                              reservation.nb_personnes
+                            }
+                          </strong>
+
+                          <span>
+                            {reservation.nb_personnes >
+                            1
+                              ? "personnes"
+                              : "personne"}
+                          </span>
+                        </div>
+
+                        {canBeCancelled && (
+                          <button
+                            type="button"
+                            className="reservation-cancel-btn"
+                            onClick={() =>
+                              handleCancelReservation(
+                                reservation.id
+                              )
+                            }
+                          >
+                            Annuler
+                          </button>
+                        )}
+                      </article>
+                    );
+                  }
+                )}
+              </section>
+            )}
         </main>
       </div>
     </div>
@@ -335,10 +663,20 @@ function getTodayDate() {
   return formatDateToInputValue(today);
 }
 
-function changeDateByDays(dateString: string, days: number) {
-  const [year, month, day] = dateString.split("-").map(Number);
+function changeDateByDays(
+  dateString: string,
+  days: number
+) {
+  const [year, month, day] = dateString
+    .split("-")
+    .map(Number);
 
-  const date = new Date(year, month - 1, day);
+  const date = new Date(
+    year,
+    month - 1,
+    day
+  );
+
   date.setDate(date.getDate() + days);
 
   return formatDateToInputValue(date);
@@ -348,27 +686,54 @@ function getMonthValue(dateString: string) {
   return dateString.slice(0, 7);
 }
 
-function changeMonthValue(monthValue: string, months: number) {
-  const [year, month] = monthValue.split("-").map(Number);
+function changeMonthValue(
+  monthValue: string,
+  months: number
+) {
+  const [year, month] = monthValue
+    .split("-")
+    .map(Number);
 
-  const date = new Date(year, month - 1, 1);
+  const date = new Date(
+    year,
+    month - 1,
+    1
+  );
+
   date.setMonth(date.getMonth() + months);
 
-  return formatDateToInputValue(date).slice(0, 7);
+  return formatDateToInputValue(date).slice(
+    0,
+    7
+  );
 }
 
 function formatDateFr(dateString: string) {
-  const [year, month, day] = dateString.split("-").map(Number);
+  const [year, month, day] = dateString
+    .split("-")
+    .map(Number);
 
-  const date = new Date(year, month - 1, day);
+  const date = new Date(
+    year,
+    month - 1,
+    day
+  );
 
   return date.toLocaleDateString("fr-FR");
 }
 
-function formatMonthLabel(monthValue: string) {
-  const [year, month] = monthValue.split("-").map(Number);
+function formatMonthLabel(
+  monthValue: string
+) {
+  const [year, month] = monthValue
+    .split("-")
+    .map(Number);
 
-  const date = new Date(year, month - 1, 1);
+  const date = new Date(
+    year,
+    month - 1,
+    1
+  );
 
   return date.toLocaleDateString("fr-FR", {
     month: "long",
@@ -377,7 +742,8 @@ function formatMonthLabel(monthValue: string) {
 }
 
 function formatService(service: string) {
-  const normalizedService = service.toLowerCase();
+  const normalizedService =
+    service.toLowerCase();
 
   if (normalizedService === "midi") {
     return "Midi";
@@ -390,22 +756,58 @@ function formatService(service: string) {
   return service;
 }
 
-function getCalendarDays(monthValue: string) {
-  const [year, month] = monthValue.split("-").map(Number);
+function getCalendarDays(
+  monthValue: string
+) {
+  const [year, month] = monthValue
+    .split("-")
+    .map(Number);
 
-  const firstDayOfMonth = new Date(year, month - 1, 1);
-  const daysInMonth = new Date(year, month, 0).getDate();
-  const firstDayIndex = convertJsDayToMondayFirst(firstDayOfMonth.getDay());
+  const firstDayOfMonth = new Date(
+    year,
+    month - 1,
+    1
+  );
 
-  const days: Array<null | { date: string; dayNumber: number }> = [];
+  const daysInMonth = new Date(
+    year,
+    month,
+    0
+  ).getDate();
 
-  for (let i = 0; i < firstDayIndex; i++) {
+  const firstDayIndex =
+    convertJsDayToMondayFirst(
+      firstDayOfMonth.getDay()
+    );
+
+  const days: Array<
+    null | {
+      date: string;
+      dayNumber: number;
+    }
+  > = [];
+
+  for (
+    let index = 0;
+    index < firstDayIndex;
+    index++
+  ) {
     days.push(null);
   }
 
-  for (let day = 1; day <= daysInMonth; day++) {
-    const date = new Date(year, month - 1, day);
-    const dateString = formatDateToInputValue(date);
+  for (
+    let day = 1;
+    day <= daysInMonth;
+    day++
+  ) {
+    const date = new Date(
+      year,
+      month - 1,
+      day
+    );
+
+    const dateString =
+      formatDateToInputValue(date);
 
     days.push({
       date: dateString,
@@ -416,7 +818,9 @@ function getCalendarDays(monthValue: string) {
   return days;
 }
 
-function convertJsDayToMondayFirst(jsDay: number) {
+function convertJsDayToMondayFirst(
+  jsDay: number
+) {
   if (jsDay === 0) {
     return 6;
   }
@@ -424,10 +828,18 @@ function convertJsDayToMondayFirst(jsDay: number) {
   return jsDay - 1;
 }
 
-function formatDateToInputValue(date: Date) {
+function formatDateToInputValue(
+  date: Date
+) {
   const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
+
+  const month = String(
+    date.getMonth() + 1
+  ).padStart(2, "0");
+
+  const day = String(
+    date.getDate()
+  ).padStart(2, "0");
 
   return `${year}-${month}-${day}`;
 }

@@ -17,6 +17,8 @@ import {
 import { useColorScheme } from "react-native";
 import { AnimatedSplashOverlay } from "@/components/animated-icon";
 import AvisModal from "@/components/AvisModal";
+import AnnulationNotif from "@/components/AnnulationNotif";
+
 
 export default function RootLayout() {
   const colorScheme = useColorScheme();
@@ -60,7 +62,7 @@ export default function RootLayout() {
           options={{ headerShown: false }}
         />
       </Stack>
-
+      <AnnulationNotif />
       {!pagesSansAvis && <AvisModal />}
     </ThemeProvider>
   );
