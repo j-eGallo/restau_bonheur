@@ -27,6 +27,10 @@ jobs:
           echo "APP_ENV=test" > .env
           echo "APP_DEBUG=0" >> .env
           echo "APP_SECRET=github-actions-test-secret" >> .env
+          echo 'DATABASE_URL="mysql://test:test@127.0.0.1:3306/test?serverVersion=8.0&charset=utf8mb4"' >> .env
+          echo "JWT_SECRET_KEY=%kernel.project_dir%/config/jwt/private.pem" >> .env
+          echo "JWT_PUBLIC_KEY=%kernel.project_dir%/config/jwt/public.pem" >> .env
+          echo "JWT_PASSPHRASE=test-passphrase" >> .env
 
       - name: Installer les dépendances backend
         working-directory: ./backend
