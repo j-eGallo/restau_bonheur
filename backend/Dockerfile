@@ -53,4 +53,4 @@ ENV APP_DEBUG=0
 EXPOSE 10000
 
 # Utilisation du port fourni par Render
-CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-10000} -t public public/index.php"]
+CMD ["sh", "-c", "php -S 0.0.0.0:${PORT:-10000} -t public public/router.php"]
