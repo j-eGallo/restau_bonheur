@@ -25,28 +25,28 @@ type Profile = {
 
 
 export default function Home() {
-  const navigate = useNavigate();
+const navigate = useNavigate();
 const [profile, setProfile] = useState<Profile | null>(null);
 const API_URL = import.meta.env.VITE_API_URL;
 
 
-      useEffect(() => {
-          const token = localStorage.getItem('restaurateur_token');
-
-        if(!token){
-
-          navigate('/');
-
-          return;
+useEffect(() => {
+  const token = localStorage.getItem('restaurateur_token');
+  if(!token){
+    navigate('/');
+    return;
+  }
 
 
-    }
 fetch(`${API_URL}/api/restaurateur/me`, {
   method: "GET",
   headers: {
   Authorization: `Bearer ${token}`
   }
 })
+
+
+
   .then(async (res) => {
     const text = await res.text();
 

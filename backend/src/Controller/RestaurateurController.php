@@ -310,7 +310,6 @@ class RestaurateurController extends AbstractController
     }
 
 
-    // VÉRIFICATION CHAMPS BIEN REMPLIS
     $email = $data['email'] ?? null;
     $password = $data['password'] ?? null;
 
@@ -320,7 +319,6 @@ class RestaurateurController extends AbstractController
       ], 400);
     }
 
-    // CHERCHER LE RESTAURATEUR DANS LA BDD (VIA SON EMAIL)
     $user = $restaurateurRepository->findOneBy([
       'email' => $email
     ]);
@@ -331,17 +329,14 @@ class RestaurateurController extends AbstractController
       ], 401);
     }
 
-    // VÉRIFIE SI LE MDP EST CORRECT
     if (!$passwordHasher->isPasswordValid($user, $password)) {
       return $this->json([
         'error' => 'Identifiants invalides'
       ], 401);
     }
 
-    // CRÉATION D'UN NOUVEAU TOKEN À CHAQUE CONNEXION D'UN UTILISATEUR
     $token = $JWTManager->create($user);
 
-    // MESSAGE AFFICHANT LES INFORMATIONS DE L'UTILISATEUR CONNECTÉ
     return $this->json([
       'token' => $token,
       'user' => [

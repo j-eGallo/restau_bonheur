@@ -309,6 +309,20 @@ const styles = StyleSheet.create({
     elevation: 8,
   },
 
+    cardActions: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 16,
+    marginLeft: 12,
+  },
+
+  actionButton: {
+    width: 28,
+    height: 28,
+    justifyContent: "center",
+    alignItems: "center",
+  },
+
   cardLeft: {
     flex: 1,
   },
@@ -341,19 +355,7 @@ const styles = StyleSheet.create({
     lineHeight: 18,
   },
 
-  cardActions: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 16,
-    marginLeft: 12,
-  },
 
-  actionButton: {
-    width: 28,
-    height: 28,
-    justifyContent: "center",
-    alignItems: "center",
-  },
 
   actionIcon: {
     width: 24,
