@@ -4,6 +4,8 @@ nelmio_cors:
         allow_origin:
             - "^http://localhost:[0-9]+$"
             - '^http://127\.0\.0\.1:[0-9]+$'
+            - '^https://restau-bonheur\.vercel\.app$'
+            - '^https://restau-bonheur-[a-z0-9-]+\.vercel\.app$'
         allow_methods:
             - GET
             - POST
@@ -24,6 +26,8 @@ nelmio_cors:
             allow_origin:
                 - "^http://localhost:[0-9]+$"
                 - '^http://127\.0\.0\.1:[0-9]+$'
+                - '^https://restau-bonheur\.vercel\.app$'
+                - '^https://restau-bonheur-[a-z0-9-]+\.vercel\.app$'
             allow_methods:
                 - GET
                 - POST
