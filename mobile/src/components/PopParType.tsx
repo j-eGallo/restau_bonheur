@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { View, ScrollView, Image, Text, StyleSheet } from "react-native";
+import { View, ScrollView, Image, Text, Pressable, StyleSheet } from "react-native";
 import { router } from "expo-router";
 import AppText from "../components/AppText";
 
@@ -113,28 +113,44 @@ export default function PopParType() {
     key={typeCuisine.id}>
       {restaurantsDuType.map((restaurant) => {
         return (
-          <View key={restaurant.id} style={styles.bande}>
-                <Image
-                  source={{ uri: getImageUrl(restaurant.logo_url) }}
-                  style={styles.logo}
-                />
-            <AppText style={styles.nom}>{restaurant.nom}</AppText>
-            <View style={styles.stars}>
-              {[1, 2, 3, 4, 5].map((star) => (
-                <Text
-                  key={star}
-                  style={[
-                    styles.star,
-                    star <= Math.round(restaurant.note_moyenne)
-                      ? styles.starActive
-                      : styles.starInactive
-                  ]}
-                >
-                  ★
-          </Text>
-        ))}
-            </View>
-          </View>
+<Pressable
+  key={restaurant.id}
+  style={({ pressed }) => [
+    styles.bande,
+    pressed && styles.bandePressed,
+  ]}
+  onPress={() =>
+    router.push({
+      pathname: "/PageRestaurant",
+      params: {
+        id: restaurant.id.toString(),
+      },
+    })
+  }
+>
+  <Image
+    source={{ uri: getImageUrl(restaurant.logo_url) }}
+    style={styles.logo}
+  />
+
+  <AppText style={styles.nom}>{restaurant.nom}</AppText>
+
+  <View style={styles.stars}>
+    {[1, 2, 3, 4, 5].map((star) => (
+      <Text
+        key={star}
+        style={[
+          styles.star,
+          star <= Math.round(restaurant.note_moyenne)
+            ? styles.starActive
+            : styles.starInactive,
+        ]}
+      >
+        ★
+      </Text>
+    ))}
+  </View>
+</Pressable>
         );
       })}
       
@@ -195,5 +211,9 @@ starActive: {
 
 starInactive: {
   color: "#2D2D2D",
+},
+
+bandePressed: {
+  opacity: 0.7,
 },
 })
